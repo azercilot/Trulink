@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { FileText, Shield, Users, ArrowLeft, CheckCircle, Zap, Lock } from 'lucide-react';
 
 const Navbar = () => (
@@ -15,12 +16,12 @@ const Navbar = () => (
         <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors link-underline">تعرفه‌ها</a>
       </div>
       <div className="flex items-center gap-3">
-        <button className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+        <Link to="/auth" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
           ورود
-        </button>
-        <button className="text-sm font-medium bg-foreground text-background px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+        </Link>
+        <Link to="/auth" className="text-sm font-medium bg-foreground text-background px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
           شروع کنید
-        </button>
+        </Link>
       </div>
     </div>
   </nav>
