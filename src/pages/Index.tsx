@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
-import { FileText, Shield, Users, ArrowLeft, CheckCircle, Zap, Lock } from 'lucide-react';
+import { Shield, Users, ArrowLeft, CheckCircle, Zap, Lock, FileText } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 const Navbar = () => (
   <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
     <div className="container-narrow flex items-center justify-between h-16">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-          <FileText className="w-4 h-4 text-background" />
-        </div>
-        <span className="font-semibold text-lg">قراردادینو</span>
-      </div>
+      <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+        <Logo size={36} />
+        <span className="font-semibold text-lg">
+          <span className="text-foreground">Tru</span>
+          <span className="text-accent">Link</span>
+        </span>
+      </Link>
       <div className="hidden md:flex items-center gap-8">
         <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors link-underline">امکانات</a>
         <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors link-underline">نحوه کار</a>
@@ -266,12 +268,13 @@ const Footer = () => (
   <footer className="py-12 border-t border-border">
     <div className="container-narrow">
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-            <FileText className="w-4 h-4 text-background" />
-          </div>
-          <span className="font-semibold">قراردادینو</span>
-        </div>
+        <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <Logo size={32} />
+          <span className="font-semibold">
+            <span className="text-foreground">Tru</span>
+            <span className="text-accent">Link</span>
+          </span>
+        </Link>
         <div className="flex items-center gap-8 text-sm text-muted-foreground">
           <a href="#" className="hover:text-foreground transition-colors">درباره ما</a>
           <a href="#" className="hover:text-foreground transition-colors">تماس</a>
