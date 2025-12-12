@@ -8,6 +8,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import Logo from '@/components/Logo';
 
 interface Contract {
   id: string;
@@ -31,7 +32,7 @@ interface Notification {
 const statusColors: Record<string, { bg: string; text: string; label: string }> = {
   draft: { bg: 'bg-muted', text: 'text-muted-foreground', label: 'پیش‌نویس' },
   pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'در انتظار امضا' },
-  signed: { bg: 'bg-green-100', text: 'text-green-800', label: 'امضا شده' },
+  signed: { bg: 'bg-accent/10', text: 'text-accent', label: 'امضا شده' },
   expired: { bg: 'bg-red-100', text: 'text-red-800', label: 'منقضی شده' },
 };
 
@@ -145,14 +146,15 @@ const Dashboard = () => {
       {/* Sidebar */}
       <aside className="fixed top-0 right-0 h-full w-64 bg-background border-l border-border p-6 hidden lg:block">
         <div className="flex items-center gap-2 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-foreground flex items-center justify-center">
-            <FileText className="w-5 h-5 text-background" />
-          </div>
-          <span className="font-bold text-lg">قراردادینو</span>
+          <Logo size={40} />
+          <span className="font-bold text-lg">
+            <span className="text-foreground">Tru</span>
+            <span className="text-accent">Link</span>
+          </span>
         </div>
 
         <nav className="space-y-1">
-          <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted text-foreground font-medium">
+          <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 text-accent font-medium">
             <Home className="w-5 h-5" />
             داشبورد
           </Link>
@@ -188,11 +190,9 @@ const Dashboard = () => {
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
               <div className="lg:hidden flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-                  <FileText className="w-4 h-4 text-background" />
-                </div>
+                <Logo size={32} />
               </div>
-              <h1 className="text-xl font-bold">داشبورد</h1>
+              <h1 className="text-xl font-black">داشبورد</h1>
             </div>
 
             <div className="flex items-center gap-4">
@@ -204,20 +204,20 @@ const Dashboard = () => {
                 >
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -left-1 w-5 h-5 bg-foreground text-background text-xs rounded-full flex items-center justify-center">
+                    <span className="absolute -top-1 -left-1 w-5 h-5 bg-accent text-accent-foreground text-xs rounded-full flex items-center justify-center">
                       {unreadCount}
                     </span>
                   )}
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute left-0 top-full mt-2 w-80 bg-background border border-border rounded-xl shadow-lg overflow-hidden z-50">
+                  <div className="absolute left-0 top-full mt-2 w-80 bg-background border border-border rounded-xl overflow-hidden z-50" style={{ boxShadow: '0 10px 25px -5px hsl(0 0% 0% / 0.1)' }}>
                     <div className="p-4 border-b border-border">
-                      <h3 className="font-semibold">اعلان‌ها</h3>
+                      <h3 className="font-bold">اعلان‌ها</h3>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
                       {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-muted-foreground">
+                        <div className="p-4 text-center text-muted-foreground font-light">
                           اعلانی وجود ندارد
                         </div>
                       ) : (
@@ -226,11 +226,11 @@ const Dashboard = () => {
                             key={notification.id}
                             onClick={() => markNotificationAsRead(notification.id)}
                             className={`w-full p-4 text-right hover:bg-muted transition-colors ${
-                              !notification.is_read ? 'bg-muted/50' : ''
+                              !notification.is_read ? 'bg-accent/5' : ''
                             }`}
                           >
                             <div className="font-medium text-sm">{notification.title}</div>
-                            <div className="text-sm text-muted-foreground mt-1">{notification.message}</div>
+                            <div className="text-sm text-muted-foreground font-light mt-1">{notification.message}</div>
                           </button>
                         ))
                       )}
@@ -253,21 +253,21 @@ const Dashboard = () => {
         <div className="p-6">
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-background p-6 rounded-2xl border border-border">
-              <div className="text-3xl font-bold">{stats.total}</div>
-              <div className="text-muted-foreground text-sm">کل قراردادها</div>
+            <div className="bg-card p-6 rounded-2xl border border-border card-hover">
+              <div className="text-3xl font-black">{stats.total}</div>
+              <div className="text-muted-foreground text-sm font-light">کل قراردادها</div>
             </div>
-            <div className="bg-background p-6 rounded-2xl border border-border">
-              <div className="text-3xl font-bold">{stats.draft}</div>
-              <div className="text-muted-foreground text-sm">پیش‌نویس</div>
+            <div className="bg-card p-6 rounded-2xl border border-border card-hover">
+              <div className="text-3xl font-black">{stats.draft}</div>
+              <div className="text-muted-foreground text-sm font-light">پیش‌نویس</div>
             </div>
-            <div className="bg-background p-6 rounded-2xl border border-border">
-              <div className="text-3xl font-bold">{stats.pending}</div>
-              <div className="text-muted-foreground text-sm">در انتظار امضا</div>
+            <div className="bg-card p-6 rounded-2xl border border-border card-hover">
+              <div className="text-3xl font-black">{stats.pending}</div>
+              <div className="text-muted-foreground text-sm font-light">در انتظار امضا</div>
             </div>
-            <div className="bg-background p-6 rounded-2xl border border-border">
-              <div className="text-3xl font-bold">{stats.signed}</div>
-              <div className="text-muted-foreground text-sm">امضا شده</div>
+            <div className="bg-card p-6 rounded-2xl border border-border card-hover">
+              <div className="text-3xl font-black text-accent">{stats.signed}</div>
+              <div className="text-muted-foreground text-sm font-light">امضا شده</div>
             </div>
           </div>
 
@@ -275,7 +275,7 @@ const Dashboard = () => {
           <div className="mb-8">
             <Link
               to="/contracts/new"
-              className="inline-flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-2 btn-accent px-6 py-3"
             >
               <Plus className="w-5 h-5" />
               ایجاد قرارداد جدید
@@ -283,10 +283,10 @@ const Dashboard = () => {
           </div>
 
           {/* Contracts List */}
-          <div className="bg-background rounded-2xl border border-border">
+          <div className="bg-card rounded-2xl border border-border" style={{ boxShadow: 'var(--shadow-sm)' }}>
             <div className="p-6 border-b border-border">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h2 className="font-semibold text-lg">قراردادهای من</h2>
+                <h2 className="font-bold text-lg">قراردادهای من</h2>
                 <div className="flex items-center gap-3">
                   {/* Search */}
                   <div className="relative">
@@ -296,7 +296,7 @@ const Dashboard = () => {
                       placeholder="جستجو..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full sm:w-64 h-10 pr-10 pl-4 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                      className="input-elevated w-full sm:w-64 h-10 pr-10 pl-4 text-sm"
                     />
                   </div>
                   {/* Filter */}
@@ -305,7 +305,7 @@ const Dashboard = () => {
                     <select
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="h-10 pr-10 pl-4 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring text-sm appearance-none cursor-pointer"
+                      className="input-elevated h-10 pr-10 pl-4 text-sm appearance-none cursor-pointer"
                     >
                       <option value="all">همه وضعیت‌ها</option>
                       <option value="draft">پیش‌نویس</option>
@@ -319,14 +319,14 @@ const Dashboard = () => {
             </div>
 
             {loading ? (
-              <div className="p-12 text-center text-muted-foreground">
+              <div className="p-12 text-center text-muted-foreground font-light">
                 در حال بارگذاری...
               </div>
             ) : filteredContracts.length === 0 ? (
               <div className="p-12 text-center">
                 <FileText className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
-                <h3 className="font-medium text-lg mb-2">قراردادی یافت نشد</h3>
-                <p className="text-muted-foreground mb-4">
+                <h3 className="font-bold text-lg mb-2">قراردادی یافت نشد</h3>
+                <p className="text-muted-foreground font-light mb-4">
                   {contracts.length === 0
                     ? 'اولین قرارداد خود را ایجاد کنید'
                     : 'نتیجه‌ای برای جستجوی شما یافت نشد'}
@@ -334,7 +334,7 @@ const Dashboard = () => {
                 {contracts.length === 0 && (
                   <Link
                     to="/contracts/new"
-                    className="inline-flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                    className="inline-flex items-center gap-2 btn-accent px-4 py-2"
                   >
                     <Plus className="w-4 h-4" />
                     ایجاد قرارداد
@@ -350,12 +350,12 @@ const Dashboard = () => {
                     className="flex items-center justify-between p-6 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-muted-foreground" />
+                      <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-accent" />
                       </div>
                       <div>
                         <h3 className="font-medium">{contract.title}</h3>
-                        <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground font-light mt-1">
                           <span>{contract.contract_type}</span>
                           {contract.party_name && (
                             <>
