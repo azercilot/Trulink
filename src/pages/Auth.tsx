@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileText, Mail, Lock, ArrowLeft, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, Loader2, Eye, EyeOff, CheckCircle, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import Logo from '@/components/Logo';
 
 const loginSchema = z.object({
   email: z.string().email('ایمیل معتبر نیست'),
@@ -128,7 +129,7 @@ const Auth = () => {
 
   const onboardingSteps = [
     {
-      title: 'به قراردادینو خوش آمدید! 🎉',
+      title: 'به TruLink خوش آمدید!',
       description: 'شما با موفقیت ثبت‌نام کردید. بیایید با هم مهم‌ترین ویژگی‌ها را مرور کنیم.',
     },
     {
@@ -157,8 +158,8 @@ const Auth = () => {
             <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-8 h-8 text-accent" />
             </div>
-            <h2 className="text-2xl font-bold mb-3">{onboardingSteps[onboardingStep].title}</h2>
-            <p className="text-muted-foreground mb-6">{onboardingSteps[onboardingStep].description}</p>
+            <h2 className="text-2xl font-black mb-3">{onboardingSteps[onboardingStep].title}</h2>
+            <p className="text-muted-foreground font-light mb-6">{onboardingSteps[onboardingStep].description}</p>
             
             <div className="flex justify-center gap-2 mb-6">
               {onboardingSteps.map((_, idx) => (
@@ -199,19 +200,20 @@ const Auth = () => {
           </Link>
           
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-foreground flex items-center justify-center">
-              <FileText className="w-5 h-5 text-background" />
-            </div>
-            <span className="font-bold text-xl">قراردادینو</span>
+            <Logo size={40} />
+            <span className="font-bold text-xl">
+              <span className="text-foreground">Tru</span>
+              <span className="text-accent">Link</span>
+            </span>
           </div>
 
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-2xl font-black mb-2">
             {isLogin ? 'ورود به حساب کاربری' : 'ایجاد حساب کاربری'}
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground font-light mb-8">
             {isLogin 
               ? 'خوش آمدید! لطفاً وارد حساب خود شوید.' 
-              : 'برای استفاده از امکانات قراردادینو ثبت‌نام کنید.'}
+              : 'برای استفاده از امکانات TruLink ثبت‌نام کنید.'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -230,7 +232,7 @@ const Auth = () => {
                 />
               </div>
               {errors.email && <p className="text-destructive text-sm mt-1.5">{errors.email}</p>}
-              <p className="text-muted-foreground text-xs mt-1.5">آدرس ایمیل معتبر وارد کنید</p>
+              <p className="text-muted-foreground text-xs mt-1.5 font-light">آدرس ایمیل معتبر وارد کنید</p>
             </div>
 
             <div>
@@ -255,7 +257,7 @@ const Auth = () => {
                 </button>
               </div>
               {errors.password && <p className="text-destructive text-sm mt-1.5">{errors.password}</p>}
-              <p className="text-muted-foreground text-xs mt-1.5">
+              <p className="text-muted-foreground text-xs mt-1.5 font-light">
                 {isLogin ? 'رمز عبور خود را وارد کنید' : 'حداقل ۸ کاراکتر و یک عدد'}
               </p>
             </div>
@@ -270,7 +272,7 @@ const Auth = () => {
             </button>
           </form>
 
-          <p className="text-center text-muted-foreground mt-6">
+          <p className="text-center text-muted-foreground mt-6 font-light">
             {isLogin ? 'حساب کاربری ندارید؟' : 'قبلاً ثبت‌نام کرده‌اید؟'}
             <button
               onClick={() => {
@@ -286,32 +288,32 @@ const Auth = () => {
       </div>
 
       {/* Right side - Decorative */}
-      <div className="hidden lg:flex flex-1 bg-foreground items-center justify-center p-12">
-        <div className="max-w-md text-background">
-          <h2 className="text-3xl font-bold mb-6">
+      <div className="hidden lg:flex flex-1 bg-primary items-center justify-center p-12">
+        <div className="max-w-md text-primary-foreground">
+          <h2 className="text-3xl font-black mb-6">
             قراردادهای هوشمند، معاملات مطمئن
           </h2>
-          <p className="text-gray-400 text-lg mb-8">
-            با قراردادینو، قراردادهای خود را به صورت آنلاین تنظیم، امضا و مدیریت کنید. سریع، امن و حرفه‌ای.
+          <p className="text-primary-foreground/70 text-lg font-light mb-8">
+            با TruLink، قراردادهای خود را به صورت آنلاین تنظیم، امضا و مدیریت کنید. سریع، امن و حرفه‌ای.
           </p>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
                 <FileText className="w-5 h-5 text-accent" />
               </div>
-              <span className="text-gray-300">صدها قالب قرارداد آماده</span>
+              <span className="text-primary-foreground/80 font-light">صدها قالب قرارداد آماده</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
                 <Lock className="w-5 h-5 text-accent" />
               </div>
-              <span className="text-gray-300">امضای دیجیتال امن</span>
+              <span className="text-primary-foreground/80 font-light">امضای دیجیتال امن</span>
             </div>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-accent" />
               </div>
-              <span className="text-gray-300">احراز هویت طرفین قرارداد</span>
+              <span className="text-primary-foreground/80 font-light">احراز هویت طرفین قرارداد</span>
             </div>
           </div>
         </div>
