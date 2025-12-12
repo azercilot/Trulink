@@ -63,6 +63,13 @@ export default {
           900: "hsl(var(--gray-900))",
         },
       },
+      boxShadow: {
+        'xs': 'var(--shadow-xs)',
+        'soft': 'var(--shadow-sm)',
+        'elevated': 'var(--shadow-md)',
+        'floating': 'var(--shadow-lg)',
+        'accent': 'var(--shadow-accent)',
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

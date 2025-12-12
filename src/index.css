@@ -6,53 +6,61 @@
 
 @layer base {
   :root {
+    /* Pure white/black base */
     --background: 0 0% 100%;
-    --foreground: 0 0% 8%;
+    --foreground: 0 0% 0%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 8%;
+    /* Card with subtle gray for depth */
+    --card: 0 0% 97%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary stays black */
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
 
+    /* Secondary for layering */
     --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary-foreground: 0 0% 0%;
 
     --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 40%;
 
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 9%;
+    /* Accent color - Soft teal/blue for CTAs */
+    --accent: 160 84% 39%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 9%;
+    /* Softer border for elegance */
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 160 84% 39%;
 
     --radius: 0.75rem;
 
-    /* Custom tokens */
+    /* Gray palette for depth */
     --gray-50: 0 0% 98%;
     --gray-100: 0 0% 96%;
-    --gray-200: 0 0% 90%;
-    --gray-300: 0 0% 83%;
-    --gray-400: 0 0% 64%;
+    --gray-200: 0 0% 88%;
+    --gray-300: 0 0% 80%;
+    --gray-400: 0 0% 60%;
     --gray-500: 0 0% 45%;
     --gray-600: 0 0% 32%;
-    --gray-700: 0 0% 25%;
-    --gray-800: 0 0% 15%;
-    --gray-900: 0 0% 9%;
+    --gray-700: 0 0% 20%;
+    --gray-800: 0 0% 12%;
+    --gray-900: 0 0% 0%;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    /* Soft shadows for depth */
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.03);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.04), 0 1px 2px -1px hsl(0 0% 0% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.05), 0 2px 4px -2px hsl(0 0% 0% / 0.04);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.06), 0 4px 6px -4px hsl(0 0% 0% / 0.04);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.08), 0 8px 10px -6px hsl(0 0% 0% / 0.05);
+    --shadow-accent: 0 4px 14px -3px hsl(160 84% 39% / 0.25);
   }
 }
 
@@ -79,15 +87,16 @@
 
   .gradient-text {
     @apply text-transparent bg-clip-text;
-    background-image: linear-gradient(135deg, hsl(0 0% 9%), hsl(0 0% 45%));
+    background-image: linear-gradient(135deg, hsl(0 0% 0%), hsl(0 0% 40%));
   }
 
   .card-hover {
-    @apply transition-all duration-300 ease-out;
+    @apply transition-all duration-300 ease-out bg-card border border-border rounded-xl;
+    box-shadow: var(--shadow-sm);
   }
 
   .card-hover:hover {
-    @apply -translate-y-1;
+    @apply -translate-y-1 border-gray-300;
     box-shadow: var(--shadow-lg);
   }
 
@@ -97,11 +106,39 @@
 
   .link-underline::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-full h-px bg-foreground scale-x-0 origin-right transition-transform duration-300;
+    @apply absolute bottom-0 left-0 w-full h-px bg-accent scale-x-0 origin-right transition-transform duration-300;
   }
 
   .link-underline:hover::after {
     @apply scale-x-100 origin-left;
+  }
+
+  /* Accent button styles */
+  .btn-accent {
+    @apply bg-accent text-accent-foreground font-medium rounded-xl transition-all duration-200;
+    box-shadow: var(--shadow-accent);
+  }
+
+  .btn-accent:hover {
+    @apply brightness-110;
+    box-shadow: 0 6px 20px -4px hsl(160 84% 39% / 0.35);
+  }
+
+  /* Input with soft shadow */
+  .input-elevated {
+    @apply border border-border bg-background rounded-xl transition-all duration-200;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .input-elevated:focus {
+    @apply border-accent ring-2 ring-accent/20;
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Card with depth */
+  .card-elevated {
+    @apply bg-card border border-border rounded-xl;
+    box-shadow: var(--shadow-sm);
   }
 }
 

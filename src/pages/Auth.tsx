@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { FileText, Mail, Lock, User, ArrowLeft, Loader2 } from 'lucide-react';
+import { FileText, Mail, Lock, ArrowLeft, Loader2, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
@@ -11,23 +11,21 @@ const loginSchema = z.object({
 });
 
 const signupSchema = z.object({
-  fullName: z.string().min(2, 'نام باید حداقل ۲ کاراکتر باشد'),
   email: z.string().email('ایمیل معتبر نیست'),
-  password: z.string().min(6, 'رمز عبور باید حداقل ۶ کاراکتر باشد'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'رمز عبور و تکرار آن یکسان نیستند',
-  path: ['confirmPassword'],
+  password: z.string()
+    .min(8, 'رمز عبور باید حداقل ۸ کاراکتر باشد')
+    .regex(/[0-9]/, 'رمز عبور باید حداقل یک عدد داشته باشد'),
 });
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const [formData, setFormData] = useState({
-    fullName: '',
     email: '',
     password: '',
-    confirmPassword: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   
@@ -36,10 +34,10 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
+    if (user && !showOnboarding) {
       navigate('/dashboard');
     }
-  }, [user, navigate]);
+  }, [user, navigate, showOnboarding]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -98,7 +96,7 @@ const Auth = () => {
           return;
         }
 
-        const { error } = await signUp(formData.email, formData.password, formData.fullName);
+        const { error } = await signUp(formData.email, formData.password, '');
         if (error) {
           if (error.message.includes('already registered')) {
             toast({
@@ -114,11 +112,7 @@ const Auth = () => {
             });
           }
         } else {
-          toast({
-            title: 'ثبت‌نام موفق!',
-            description: 'حساب کاربری شما ایجاد شد',
-          });
-          navigate('/dashboard');
+          setShowOnboarding(true);
         }
       }
     } catch (err) {
@@ -131,6 +125,68 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const onboardingSteps = [
+    {
+      title: 'به قراردادینو خوش آمدید! 🎉',
+      description: 'شما با موفقیت ثبت‌نام کردید. بیایید با هم مهم‌ترین ویژگی‌ها را مرور کنیم.',
+    },
+    {
+      title: 'قالب‌های آماده',
+      description: 'از صدها قالب قرارداد حرفه‌ای استفاده کنید و وقت خود را صرفه‌جویی کنید.',
+    },
+    {
+      title: 'امضای دیجیتال',
+      description: 'قراردادها را به صورت آنلاین امضا کنید و به طرف مقابل ارسال نمایید.',
+    },
+  ];
+
+  const handleOnboardingNext = () => {
+    if (onboardingStep < onboardingSteps.length - 1) {
+      setOnboardingStep(onboardingStep + 1);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  if (showOnboarding) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+        <div className="w-full max-w-md text-center">
+          <div className="card-elevated p-8 mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-8 h-8 text-accent" />
+            </div>
+            <h2 className="text-2xl font-bold mb-3">{onboardingSteps[onboardingStep].title}</h2>
+            <p className="text-muted-foreground mb-6">{onboardingSteps[onboardingStep].description}</p>
+            
+            <div className="flex justify-center gap-2 mb-6">
+              {onboardingSteps.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`w-2 h-2 rounded-full transition-colors ${idx === onboardingStep ? 'bg-accent' : 'bg-border'}`} 
+                />
+              ))}
+            </div>
+
+            <button
+              onClick={handleOnboardingNext}
+              className="btn-accent w-full h-12 rounded-xl font-medium"
+            >
+              {onboardingStep < onboardingSteps.length - 1 ? 'بعدی' : 'شروع کنید'}
+            </button>
+          </div>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="text-muted-foreground hover:text-foreground transition-colors text-sm"
+          >
+            رد کردن
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex" dir="rtl">
@@ -158,25 +214,7 @@ const Auth = () => {
               : 'برای استفاده از امکانات قراردادینو ثبت‌نام کنید.'}
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium mb-1.5">نام و نام خانوادگی</label>
-                <div className="relative">
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="نام کامل خود را وارد کنید"
-                  />
-                </div>
-                {errors.fullName && <p className="text-destructive text-sm mt-1">{errors.fullName}</p>}
-              </div>
-            )}
-
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium mb-1.5">ایمیل</label>
               <div className="relative">
@@ -186,12 +224,13 @@ const Auth = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="input-elevated w-full h-12 pr-11 pl-4 focus:outline-none"
                   placeholder="example@email.com"
                   dir="ltr"
                 />
               </div>
-              {errors.email && <p className="text-destructive text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-destructive text-sm mt-1.5">{errors.email}</p>}
+              <p className="text-muted-foreground text-xs mt-1.5">آدرس ایمیل معتبر وارد کنید</p>
             </div>
 
             <div>
@@ -199,41 +238,32 @@ const Auth = () => {
               <div className="relative">
                 <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="input-elevated w-full h-12 pr-11 pl-11 focus:outline-none"
                   placeholder="••••••••"
                   dir="ltr"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
-              {errors.password && <p className="text-destructive text-sm mt-1">{errors.password}</p>}
+              {errors.password && <p className="text-destructive text-sm mt-1.5">{errors.password}</p>}
+              <p className="text-muted-foreground text-xs mt-1.5">
+                {isLogin ? 'رمز عبور خود را وارد کنید' : 'حداقل ۸ کاراکتر و یک عدد'}
+              </p>
             </div>
-
-            {!isLogin && (
-              <div>
-                <label className="block text-sm font-medium mb-1.5">تکرار رمز عبور</label>
-                <div className="relative">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="••••••••"
-                    dir="ltr"
-                  />
-                </div>
-                {errors.confirmPassword && <p className="text-destructive text-sm mt-1">{errors.confirmPassword}</p>}
-              </div>
-            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-foreground text-background rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="btn-accent w-full h-12 rounded-xl font-medium disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {isLogin ? 'ورود' : 'ثبت‌نام'}
@@ -247,7 +277,7 @@ const Auth = () => {
                 setIsLogin(!isLogin);
                 setErrors({});
               }}
-              className="text-foreground font-medium mr-1 hover:underline"
+              className="text-accent font-medium mr-1 hover:underline"
             >
               {isLogin ? 'ثبت‌نام کنید' : 'وارد شوید'}
             </button>
@@ -266,20 +296,20 @@ const Auth = () => {
           </p>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-gray-400" />
+              <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-accent" />
               </div>
               <span className="text-gray-300">صدها قالب قرارداد آماده</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
-                <Lock className="w-5 h-5 text-gray-400" />
+              <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                <Lock className="w-5 h-5 text-accent" />
               </div>
               <span className="text-gray-300">امضای دیجیتال امن</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-400" />
+              <div className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-accent" />
               </div>
               <span className="text-gray-300">احراز هویت طرفین قرارداد</span>
             </div>
