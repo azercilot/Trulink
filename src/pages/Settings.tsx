@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
-  ArrowRight, User, Mail, Phone, Building, CreditCard, 
-  Bell, Lock, Loader2, Check
+  ArrowRight, ArrowLeft, User, Mail, Phone, Building, CreditCard, 
+  Bell, Lock, Loader2, Check, Globe
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,9 +18,12 @@ interface Profile {
 }
 
 const Settings = () => {
+  const { t, i18n } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isRTL = i18n.language === 'fa' || i18n.language === 'ar';
+  const BackIcon = isRTL ? ArrowRight : ArrowLeft;
   
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,14 +95,14 @@ const Settings = () => {
       if (error) throw error;
 
       toast({
-        title: 'ذخیره شد',
-        description: 'تغییرات با موفقیت ذخیره شد',
+        title: t('settings.saved'),
+        description: t('settings.savedDesc'),
       });
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: 'خطا',
-        description: 'در ذخیره تغییرات مشکلی پیش آمد',
+        title: t('settings.error'),
+        description: t('settings.errorDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -106,24 +110,29 @@ const Settings = () => {
     }
   };
 
+  const changeLanguage = (lang: string) => {
+    i18n.changeLanguage(lang);
+    localStorage.setItem('language', lang);
+  };
+
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <div className="animate-pulse text-muted-foreground">در حال بارگذاری...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="animate-pulse text-muted-foreground">{t('settings.loading')}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-muted/30" dir="rtl">
+    <div className="min-h-screen bg-muted/30" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
       <header className="bg-background border-b border-border">
         <div className="container-narrow flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
             <Link to="/dashboard" className="p-2 hover:bg-muted rounded-lg transition-colors">
-              <ArrowRight className="w-5 h-5" />
+              <BackIcon className="w-5 h-5" />
             </Link>
-            <h1 className="font-semibold">تنظیمات</h1>
+            <h1 className="font-semibold">{t('settings.title')}</h1>
           </div>
         </div>
       </header>
@@ -132,49 +141,49 @@ const Settings = () => {
         <div className="max-w-2xl">
           {/* Profile Section */}
           <div className="bg-background rounded-2xl border border-border p-6 mb-6">
-            <h2 className="font-semibold text-lg mb-6">اطلاعات شخصی</h2>
+            <h2 className="font-semibold text-lg mb-6">{t('settings.profile.title')}</h2>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium mb-1.5">ایمیل</label>
+                <label className="block text-sm font-medium mb-1.5">{t('settings.profile.email')}</label>
                 <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Mail className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
                   <input
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-muted text-muted-foreground cursor-not-allowed"
+                    className={`w-full h-12 ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} rounded-xl border border-border bg-muted text-muted-foreground cursor-not-allowed`}
                     dir="ltr"
                   />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">ایمیل قابل تغییر نیست</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('settings.profile.emailNote')}</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">نام و نام خانوادگی</label>
+                <label className="block text-sm font-medium mb-1.5">{t('settings.profile.fullName')}</label>
                 <div className="relative">
-                  <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <User className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
                   <input
                     type="text"
                     name="full_name"
                     value={formData.full_name}
                     onChange={handleChange}
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="نام کامل خود را وارد کنید"
+                    className={`w-full h-12 ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
+                    placeholder={t('settings.profile.fullNamePlaceholder')}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">شماره تماس</label>
+                <label className="block text-sm font-medium mb-1.5">{t('settings.profile.phone')}</label>
                 <div className="relative">
-                  <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Phone className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    className={`w-full h-12 ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
                     placeholder="09123456789"
                     dir="ltr"
                   />
@@ -182,30 +191,30 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">نام شرکت</label>
+                <label className="block text-sm font-medium mb-1.5">{t('settings.profile.companyName')}</label>
                 <div className="relative">
-                  <Building className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Building className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
                   <input
                     type="text"
                     name="company_name"
                     value={formData.company_name}
                     onChange={handleChange}
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="نام شرکت (اختیاری)"
+                    className={`w-full h-12 ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
+                    placeholder={t('settings.profile.companyNamePlaceholder')}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">کد ملی</label>
+                <label className="block text-sm font-medium mb-1.5">{t('settings.profile.nationalId')}</label>
                 <div className="relative">
-                  <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <CreditCard className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
                   <input
                     type="text"
                     name="national_id"
                     value={formData.national_id}
                     onChange={handleChange}
-                    className="w-full h-12 pr-11 pl-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                    className={`w-full h-12 ${isRTL ? 'pr-11 pl-4' : 'pl-11 pr-4'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
                     placeholder="0123456789"
                     dir="ltr"
                   />
@@ -222,28 +231,59 @@ const Settings = () => {
                 ) : (
                   <Check className="w-5 h-5" />
                 )}
-                ذخیره تغییرات
+                {t('settings.profile.save')}
               </button>
             </form>
           </div>
 
+          {/* Language Section */}
+          <div className="bg-background rounded-2xl border border-border p-6 mb-6">
+            <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-muted-foreground" />
+              {t('settings.language.title')}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">{t('settings.language.subtitle')}</p>
+            
+            <div className="flex flex-wrap gap-3">
+              {[
+                { code: 'fa', label: t('settings.language.fa'), flag: '🇮🇷' },
+                { code: 'en', label: t('settings.language.en'), flag: '🇬🇧' },
+                { code: 'ar', label: t('settings.language.ar'), flag: '🇸🇦' },
+              ].map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => changeLanguage(lang.code)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all ${
+                    i18n.language === lang.code
+                      ? 'border-accent bg-accent/10 text-accent'
+                      : 'border-border hover:bg-muted'
+                  }`}
+                >
+                  <span className="text-lg">{lang.flag}</span>
+                  <span className="font-medium">{lang.label}</span>
+                  {i18n.language === lang.code && <Check className="w-4 h-4" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Notifications Section */}
           <div className="bg-background rounded-2xl border border-border p-6 mb-6">
-            <h2 className="font-semibold text-lg mb-6">اعلان‌ها</h2>
+            <h2 className="font-semibold text-lg mb-6">{t('settings.notifications.title')}</h2>
             
             <div className="space-y-4">
               <label className="flex items-center justify-between cursor-pointer">
                 <div className="flex items-center gap-3">
                   <Bell className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="font-medium">اعلان‌های ایمیلی</p>
-                    <p className="text-sm text-muted-foreground">دریافت ایمیل برای تغییرات قراردادها</p>
+                    <p className="font-medium">{t('settings.notifications.emailNotifications')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.notifications.emailNotificationsDesc')}</p>
                   </div>
                 </div>
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="w-5 h-5 rounded border-border"
+                  className="w-5 h-5 rounded border-border accent-accent"
                 />
               </label>
 
@@ -251,14 +291,14 @@ const Settings = () => {
                 <div className="flex items-center gap-3">
                   <Bell className="w-5 h-5 text-muted-foreground" />
                   <div>
-                    <p className="font-medium">یادآوری انقضا</p>
-                    <p className="text-sm text-muted-foreground">اطلاع‌رسانی قبل از انقضای قراردادها</p>
+                    <p className="font-medium">{t('settings.notifications.expiryReminders')}</p>
+                    <p className="text-sm text-muted-foreground">{t('settings.notifications.expiryRemindersDesc')}</p>
                   </div>
                 </div>
                 <input
                   type="checkbox"
                   defaultChecked
-                  className="w-5 h-5 rounded border-border"
+                  className="w-5 h-5 rounded border-border accent-accent"
                 />
               </label>
             </div>
@@ -266,13 +306,13 @@ const Settings = () => {
 
           {/* Security Section */}
           <div className="bg-background rounded-2xl border border-border p-6">
-            <h2 className="font-semibold text-lg mb-6">امنیت</h2>
+            <h2 className="font-semibold text-lg mb-6">{t('settings.security.title')}</h2>
             
-            <button className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors w-full text-right">
+            <button className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors w-full">
               <Lock className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="font-medium">تغییر رمز عبور</p>
-                <p className="text-sm text-muted-foreground">رمز عبور خود را تغییر دهید</p>
+              <div className={isRTL ? 'text-right' : 'text-left'}>
+                <p className="font-medium">{t('settings.security.changePassword')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.security.changePasswordDesc')}</p>
               </div>
             </button>
           </div>

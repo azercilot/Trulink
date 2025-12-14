@@ -11,7 +11,9 @@ import NewContract from "./pages/NewContract";
 import ContractDetail from "./pages/ContractDetail";
 import Templates from "./pages/Templates";
 import Settings from "./pages/Settings";
+import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
+import FloatingSupport from "./components/FloatingSupport";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +24,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <FloatingSupport />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
@@ -30,6 +33,7 @@ const App = () => (
             <Route path="/contracts/:id" element={<ContractDetail />} />
             <Route path="/templates" element={<Templates />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/support" element={<Support />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,0 +1,142 @@
+{
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it Works",
+    "support": "Support",
+    "login": "Login",
+    "getStarted": "Get Started",
+    "settings": "Settings"
+  },
+  "hero": {
+    "badge": "Smart Contract Platform",
+    "title": "Online Contracts",
+    "subtitle": "Simple, Secure, Professional",
+    "description": "Create, sign, and manage contracts completely online. No paper needed, with full legal validity.",
+    "freeSignup": "Free Sign Up",
+    "viewDemo": "View Demo"
+  },
+  "features": {
+    "title": "Platform Features",
+    "subtitle": "Everything you need for professional contract management",
+    "security": {
+      "title": "High Security",
+      "description": "Advanced encryption and secure storage for all your documents"
+    },
+    "templates": {
+      "title": "Ready Templates",
+      "description": "Access hundreds of legal and business contract templates"
+    },
+    "teamwork": {
+      "title": "Team Collaboration",
+      "description": "Enable multiple people to participate in drafting and reviewing contracts"
+    },
+    "signature": {
+      "title": "Digital Signature",
+      "description": "Valid electronic signature with two-factor authentication"
+    }
+  },
+  "howItWorks": {
+    "title": "How it Works",
+    "subtitle": "Create and sign your contract in 4 simple steps",
+    "step1": {
+      "title": "Choose Template",
+      "description": "Select your desired contract from hundreds of ready templates"
+    },
+    "step2": {
+      "title": "Fill Details",
+      "description": "Enter party information and contract terms"
+    },
+    "step3": {
+      "title": "Invite Party",
+      "description": "Send the contract link to the other party"
+    },
+    "step4": {
+      "title": "Sign & Finalize",
+      "description": "After both parties sign, the contract becomes valid"
+    }
+  },
+  "cta": {
+    "title": "Start Now",
+    "subtitle": "Create your first online contract for free",
+    "button": "Free Sign Up"
+  },
+  "footer": {
+    "aboutUs": "About Us",
+    "contact": "Contact",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "support": "Support",
+    "copyright": "© 2024 TruLink. All rights reserved."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": {
+      "title": "Personal Information",
+      "email": "Email",
+      "emailNote": "Email cannot be changed",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "phone": "Phone Number",
+      "companyName": "Company Name",
+      "companyNamePlaceholder": "Company name (optional)",
+      "nationalId": "National ID",
+      "save": "Save Changes"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "emailNotifications": "Email Notifications",
+      "emailNotificationsDesc": "Receive emails for contract changes",
+      "expiryReminders": "Expiry Reminders",
+      "expiryRemindersDesc": "Get notified before contract expiration"
+    },
+    "security": {
+      "title": "Security",
+      "changePassword": "Change Password",
+      "changePasswordDesc": "Change your password"
+    },
+    "language": {
+      "title": "Language",
+      "subtitle": "Select the interface language",
+      "fa": "فارسی",
+      "en": "English",
+      "ar": "العربية"
+    },
+    "saved": "Saved",
+    "savedDesc": "Changes saved successfully",
+    "error": "Error",
+    "errorDesc": "Failed to save changes",
+    "loading": "Loading..."
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "How can we help you?",
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How can I create a new contract?",
+      "a1": "Log into your dashboard, click 'New Contract' and select your desired template.",
+      "q2": "Is the digital signature legally valid?",
+      "a2": "Yes, digital signatures in TruLink are valid according to e-commerce laws.",
+      "q3": "How do I invite the other party to the contract?",
+      "a3": "After creating the contract, you can send the unique link via email or SMS.",
+      "q4": "Can I edit a contract?",
+      "a4": "As long as the contract is not signed, editing is possible."
+    },
+    "contact": {
+      "title": "Submit a Ticket",
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "subject": "Subject",
+      "subjectPlaceholder": "Message subject",
+      "message": "Message",
+      "messagePlaceholder": "Write your message...",
+      "send": "Send Message",
+      "success": "Your message was sent successfully",
+      "successDesc": "Our support team will respond soon"
+    }
+  },
+  "common": {
+    "back": "Back"
+  }
+}
