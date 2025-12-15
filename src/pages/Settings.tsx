@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowRight, ArrowLeft, User, Mail, Phone, Building, CreditCard, 
-  Bell, Lock, Loader2, Check, Globe, Camera, Trash2, LogOut, Eye, EyeOff
+  Bell, Lock, Loader2, Check, Globe, Camera, Trash2, LogOut, Eye, EyeOff, 
+  MessageCircle, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -666,6 +667,26 @@ const Settings = () => {
 
           {/* Branding Section */}
           <AdvancedBrandingSection userId={user?.id || ''} />
+
+          {/* Support Section */}
+          <div className="bg-background rounded-2xl border border-border p-6 mb-6">
+            <h2 className="font-semibold text-lg mb-2 flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-muted-foreground" />
+              {t('settings.support.title')}
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">{t('settings.support.description')}</p>
+            
+            <Link 
+              to="/support"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors w-full"
+            >
+              <MessageCircle className="w-5 h-5 text-accent" />
+              <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
+                <p className="font-medium">{t('settings.support.contactUs')}</p>
+                <p className="text-sm text-muted-foreground">{t('settings.support.contactUsDesc')}</p>
+              </div>
+            </Link>
+          </div>
 
           {/* Logout Section */}
           <div className="bg-background rounded-2xl border border-red-200 p-6">
