@@ -89,8 +89,9 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Failed to create signature token');
     }
 
-    // Build signature URL - use the Lovable preview URL
-    const siteUrl = 'https://103e197c-ac94-48c1-8adf-69633dc289a9.lovableproject.com';
+    // Build signature URL - use the production domain to avoid spam filters
+    // Fallback to the preview domain if no custom domain is set
+    const siteUrl = 'https://gharardadino.lovable.app';
     const signatureUrl = `${siteUrl}/sign/${signatureToken}`;
 
     const res = await fetch("https://api.resend.com/emails", {
