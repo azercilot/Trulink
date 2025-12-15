@@ -220,10 +220,10 @@ const Footer = () => {
             </span>
           </Link>
           <div className="flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.aboutUs')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.contact')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.privacy')}</a>
-            <a href="#" className="hover:text-foreground transition-colors">{t('footer.terms')}</a>
+            <Link to="/about" className="hover:text-foreground transition-colors">{t('footer.aboutUs')}</Link>
+            <Link to="/support" className="hover:text-foreground transition-colors">{t('footer.contact')}</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">{t('footer.privacy')}</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">{t('footer.terms')}</Link>
             <Link to="/support" className="hover:text-foreground transition-colors">{t('footer.support')}</Link>
           </div>
         </div>
