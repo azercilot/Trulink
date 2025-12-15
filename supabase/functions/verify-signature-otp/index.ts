@@ -35,25 +35,29 @@ const handler = async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     if (tokenError || !tokenData) {
-      console.error('Token validation error:', tokenError);
       return new Response(
         JSON.stringify({ error: 'Invalid token', verified: false }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Check if OTP matches
-    if (tokenData.otp_code !== otp) {
-      console.log('OTP mismatch:', { provided: otp, expected: tokenData.otp_code });
+    const now = new Date();
+
+    // Check if locked due to too many attempts
+    if (tokenData.otp_locked_until && new Date(tokenData.otp_locked_until) > now) {
+      const remainingMinutes = Math.ceil((new Date(tokenData.otp_locked_until).getTime() - now.getTime()) / (1000 * 60));
       return new Response(
-        JSON.stringify({ verified: false, error: 'Invalid OTP' }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          verified: false, 
+          error: `Too many failed attempts. Please wait ${remainingMinutes} minutes.`,
+          locked: true
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Check if OTP is expired (10 minutes)
     const otpSentAt = new Date(tokenData.otp_sent_at);
-    const now = new Date();
     const diffMinutes = (now.getTime() - otpSentAt.getTime()) / (1000 * 60);
 
     if (diffMinutes > 10) {
@@ -63,27 +67,61 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Mark OTP as verified
+    // Check if OTP matches
+    const currentAttempts = (tokenData.otp_attempts || 0) + 1;
+    const MAX_ATTEMPTS = 5;
+
+    if (tokenData.otp_code !== otp) {
+      // Update attempt counter
+      const updateData: Record<string, unknown> = { otp_attempts: currentAttempts };
+      
+      // Lock after MAX_ATTEMPTS failed attempts (15 minute lockout)
+      if (currentAttempts >= MAX_ATTEMPTS) {
+        updateData.otp_locked_until = new Date(now.getTime() + 15 * 60 * 1000).toISOString();
+      }
+      
+      await serviceClient
+        .from('signature_tokens')
+        .update(updateData)
+        .eq('id', tokenData.id);
+
+      const remainingAttempts = MAX_ATTEMPTS - currentAttempts;
+      const errorMessage = currentAttempts >= MAX_ATTEMPTS
+        ? 'Too many failed attempts. Locked for 15 minutes.'
+        : `Invalid OTP. ${remainingAttempts} attempt${remainingAttempts !== 1 ? 's' : ''} remaining.`;
+
+      return new Response(
+        JSON.stringify({ 
+          verified: false, 
+          error: errorMessage,
+          remainingAttempts: Math.max(0, remainingAttempts)
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // OTP is correct - mark as verified and reset attempts
     const { error: updateError } = await serviceClient
       .from('signature_tokens')
-      .update({ otp_verified: true })
+      .update({ 
+        otp_verified: true, 
+        otp_attempts: 0,
+        otp_locked_until: null 
+      })
       .eq('id', tokenData.id);
 
     if (updateError) {
-      console.error('Error updating token:', updateError);
       throw new Error('Failed to update verification status');
     }
-
-    console.log("OTP verified successfully for token:", token);
 
     return new Response(JSON.stringify({ verified: true }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error: any) {
-    console.error("Error in verify-signature-otp function:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: error.message, verified: false }),
+      JSON.stringify({ error: errorMessage, verified: false }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
