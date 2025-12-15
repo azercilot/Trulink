@@ -309,7 +309,14 @@
     "docTaxCertificate": "Tax Certificate",
     "docResume": "Resume",
     "docCertificates": "Educational Certificates",
-    "verificationModule": "Verification Status"
+    "verificationModule": "Verification Status",
+    "nationalIdFormat": "National ID must be exactly 10 digits",
+    "nationalIdInvalid": "Invalid National ID",
+    "birthDateRequired": "Birth date is required",
+    "birthDateInvalid": "Invalid birth date",
+    "birthDateFuture": "Birth date cannot be in the future",
+    "birthDateTooOld": "Invalid birth date",
+    "verificationDisclaimer": "This verification currently only confirms the format of the National ID and birth date. Connection to the civil registry system is in progress."
   },
   "audit": {
     "title": "Activity History",
