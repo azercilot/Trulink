@@ -413,7 +413,9 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
+          otp_attempts: number | null
           otp_code: string | null
+          otp_locked_until: string | null
           otp_sent_at: string | null
           otp_verified: boolean | null
           party_email: string
@@ -425,7 +427,9 @@ export type Database = {
           created_at?: string
           expires_at: string
           id?: string
+          otp_attempts?: number | null
           otp_code?: string | null
+          otp_locked_until?: string | null
           otp_sent_at?: string | null
           otp_verified?: boolean | null
           party_email: string
@@ -437,7 +441,9 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
+          otp_attempts?: number | null
           otp_code?: string | null
+          otp_locked_until?: string | null
           otp_sent_at?: string | null
           otp_verified?: boolean | null
           party_email?: string
