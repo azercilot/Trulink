@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Shield, Loader2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Shield, Loader2, CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { validateIranianNationalId, validateBirthDate } from '@/lib/validation';
 
 interface KYCVerificationFormProps {
   contractId: string;
@@ -26,14 +27,40 @@ const KYCVerificationForm = ({ contractId, initialData, onVerificationComplete }
   });
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [validationErrors, setValidationErrors] = useState<{ nationalId?: string; birthDate?: string }>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
     setVerificationResult(null);
+    
+    // Clear validation error for the field being changed
+    if (validationErrors[name as keyof typeof validationErrors]) {
+      setValidationErrors({ ...validationErrors, [name]: undefined });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: { nationalId?: string; birthDate?: string } = {};
+    
+    // Validate National ID
+    const nationalIdResult = validateIranianNationalId(formData.nationalId);
+    if (!nationalIdResult.valid && nationalIdResult.error) {
+      errors.nationalId = t(`kyc.${nationalIdResult.error}`);
+    }
+    
+    // Validate Birth Date
+    const birthDateResult = validateBirthDate(formData.birthDate);
+    if (!birthDateResult.valid && birthDateResult.error) {
+      errors.birthDate = t(`kyc.${birthDateResult.error}`);
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleVerify = async () => {
-    if (!formData.nationalId || !formData.birthDate) {
+    if (!validateForm()) {
       toast({
         title: t('kyc.incompleteData'),
         description: t('kyc.incompleteDataDesc'),
@@ -127,11 +154,16 @@ const KYCVerificationForm = ({ contractId, initialData, onVerificationComplete }
             name="nationalId"
             value={formData.nationalId}
             onChange={handleChange}
-            className="w-full h-11 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            className={`w-full h-11 px-4 rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-ring ${
+              validationErrors.nationalId ? 'border-red-500' : 'border-border'
+            }`}
             placeholder="0123456789"
             dir="ltr"
             maxLength={10}
           />
+          {validationErrors.nationalId && (
+            <p className="text-sm text-red-500 mt-1">{validationErrors.nationalId}</p>
+          )}
         </div>
 
         <div>
@@ -141,9 +173,23 @@ const KYCVerificationForm = ({ contractId, initialData, onVerificationComplete }
             name="birthDate"
             value={formData.birthDate}
             onChange={handleChange}
-            className="w-full h-11 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            className={`w-full h-11 px-4 rounded-xl border bg-background focus:outline-none focus:ring-2 focus:ring-ring ${
+              validationErrors.birthDate ? 'border-red-500' : 'border-border'
+            }`}
             dir="ltr"
+            max={new Date().toISOString().split('T')[0]}
           />
+          {validationErrors.birthDate && (
+            <p className="text-sm text-red-500 mt-1">{validationErrors.birthDate}</p>
+          )}
+        </div>
+
+        {/* Verification Disclaimer */}
+        <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-lg border border-border">
+          <Info className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-muted-foreground">
+            {t('kyc.verificationDisclaimer')}
+          </p>
         </div>
 
         <div>

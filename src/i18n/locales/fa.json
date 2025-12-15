@@ -315,7 +315,14 @@
     "docTaxCertificate": "گواهی مالیاتی",
     "docResume": "رزومه",
     "docCertificates": "مدارک تحصیلی",
-    "verificationModule": "استعلام وضعیت"
+    "verificationModule": "استعلام وضعیت",
+    "nationalIdFormat": "کد ملی باید دقیقاً ۱۰ رقم باشد",
+    "nationalIdInvalid": "کد ملی نامعتبر است",
+    "birthDateRequired": "تاریخ تولد الزامی است",
+    "birthDateInvalid": "تاریخ تولد نامعتبر است",
+    "birthDateFuture": "تاریخ تولد نمی‌تواند در آینده باشد",
+    "birthDateTooOld": "تاریخ تولد نامعتبر است",
+    "verificationDisclaimer": "این استعلام در حال حاضر فقط فرمت کد ملی و تاریخ تولد را تأیید می‌کند. اتصال به سامانه‌ی ثبت احوال برای استعلام نهایی در دست اقدام است."
   },
   "audit": {
     "title": "تاریخچه فعالیت",
