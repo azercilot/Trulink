@@ -114,7 +114,25 @@
     "security": {
       "title": "Security",
       "changePassword": "Change Password",
-      "changePasswordDesc": "Change your password"
+      "changePasswordDesc": "Update your account password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "passwordHint": "Password must be at least 6 characters",
+      "updatePassword": "Update Password",
+      "passwordMismatch": "Error",
+      "passwordMismatchDesc": "New password and confirmation do not match",
+      "passwordTooShort": "Error",
+      "passwordTooShortDesc": "Password must be at least 6 characters",
+      "passwordChanged": "Success",
+      "passwordChangedDesc": "Password changed successfully",
+      "passwordError": "Error",
+      "passwordErrorDesc": "Failed to change password"
+    },
+    "logout": {
+      "title": "Sign Out",
+      "description": "Signing out will log you out of all devices",
+      "button": "Sign Out"
     },
     "language": {
       "title": "Language",

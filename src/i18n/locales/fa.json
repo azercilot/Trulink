@@ -114,7 +114,25 @@
     "security": {
       "title": "امنیت",
       "changePassword": "تغییر رمز عبور",
-      "changePasswordDesc": "رمز عبور خود را تغییر دهید"
+      "changePasswordDesc": "رمز عبور حساب کاربری خود را تغییر دهید",
+      "currentPassword": "رمز عبور فعلی",
+      "newPassword": "رمز عبور جدید",
+      "confirmPassword": "تکرار رمز عبور جدید",
+      "passwordHint": "رمز عبور باید حداقل ۶ کاراکتر باشد",
+      "updatePassword": "تغییر رمز عبور",
+      "passwordMismatch": "خطا",
+      "passwordMismatchDesc": "رمز عبور جدید و تکرار آن مطابقت ندارند",
+      "passwordTooShort": "خطا",
+      "passwordTooShortDesc": "رمز عبور باید حداقل ۶ کاراکتر باشد",
+      "passwordChanged": "موفق",
+      "passwordChangedDesc": "رمز عبور با موفقیت تغییر کرد",
+      "passwordError": "خطا",
+      "passwordErrorDesc": "در تغییر رمز عبور مشکلی پیش آمد"
+    },
+    "logout": {
+      "title": "خروج از حساب",
+      "description": "با خروج از حساب، از تمام دستگاه‌ها خارج می‌شوید",
+      "button": "خروج از حساب"
     },
     "language": {
       "title": "زبان",
