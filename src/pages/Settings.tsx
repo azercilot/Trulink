@@ -3,12 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowRight, ArrowLeft, User, Mail, Phone, Building, CreditCard, 
-  Bell, Lock, Loader2, Check, Globe, Camera, Trash2
+  Bell, Lock, Loader2, Check, Globe, Camera, Trash2, LogOut, Eye, EyeOff
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
 interface Profile {
   id: string;
   full_name: string | null;
@@ -21,7 +20,7 @@ interface Profile {
 
 const Settings = () => {
   const { t, i18n } = useTranslation();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const isRTL = i18n.language === 'fa' || i18n.language === 'ar';
@@ -40,6 +39,18 @@ const Settings = () => {
     national_id: '',
     gender: '',
   });
+  
+  // Password change state
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -117,6 +128,59 @@ const Settings = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: t('settings.security.passwordMismatch'),
+        description: t('settings.security.passwordMismatchDesc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: t('settings.security.passwordTooShort'),
+        description: t('settings.security.passwordTooShortDesc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: t('settings.security.passwordChanged'),
+        description: t('settings.security.passwordChangedDesc'),
+      });
+      
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowPasswordSection(false);
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast({
+        title: t('settings.security.passwordError'),
+        description: t('settings.security.passwordErrorDesc'),
+        variant: 'destructive',
+      });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   const changeLanguage = (lang: string) => {
@@ -497,15 +561,117 @@ const Settings = () => {
           </div>
 
           {/* Security Section */}
-          <div className="bg-background rounded-2xl border border-border p-6">
+          <div className="bg-background rounded-2xl border border-border p-6 mb-6">
             <h2 className="font-semibold text-lg mb-6">{t('settings.security.title')}</h2>
             
-            <button className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors w-full">
+            <button 
+              onClick={() => setShowPasswordSection(!showPasswordSection)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border hover:bg-muted transition-colors w-full"
+            >
               <Lock className="w-5 h-5 text-muted-foreground" />
-              <div className={isRTL ? 'text-right' : 'text-left'}>
+              <div className={`flex-1 ${isRTL ? 'text-right' : 'text-left'}`}>
                 <p className="font-medium">{t('settings.security.changePassword')}</p>
                 <p className="text-sm text-muted-foreground">{t('settings.security.changePasswordDesc')}</p>
               </div>
+            </button>
+
+            {showPasswordSection && (
+              <form onSubmit={handlePasswordChange} className="mt-6 space-y-4 pt-6 border-t border-border">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">{t('settings.security.currentPassword')}</label>
+                  <div className="relative">
+                    <Lock className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
+                    <input
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      className={`w-full h-12 ${isRTL ? 'pr-11 pl-11' : 'pl-11 pr-11'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
+                      required
+                      dir="ltr"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground`}
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">{t('settings.security.newPassword')}</label>
+                  <div className="relative">
+                    <Lock className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
+                    <input
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      className={`w-full h-12 ${isRTL ? 'pr-11 pl-11' : 'pl-11 pr-11'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
+                      required
+                      minLength={6}
+                      dir="ltr"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground`}
+                    >
+                      {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{t('settings.security.passwordHint')}</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">{t('settings.security.confirmPassword')}</label>
+                  <div className="relative">
+                    <Lock className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground`} />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      className={`w-full h-12 ${isRTL ? 'pr-11 pl-11' : 'pl-11 pr-11'} rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring`}
+                      required
+                      dir="ltr"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground`}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={changingPassword}
+                  className="flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+                >
+                  {changingPassword ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Check className="w-5 h-5" />
+                  )}
+                  {t('settings.security.updatePassword')}
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Logout Section */}
+          <div className="bg-background rounded-2xl border border-red-200 p-6">
+            <h2 className="font-semibold text-lg mb-2 text-red-600">{t('settings.logout.title')}</h2>
+            <p className="text-sm text-muted-foreground mb-4">{t('settings.logout.description')}</p>
+            
+            <button 
+              onClick={handleSignOut}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl border border-red-200 text-red-600 font-medium hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="w-5 h-5" />
+              {t('settings.logout.button')}
             </button>
           </div>
         </div>

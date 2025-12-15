@@ -114,7 +114,25 @@
     "security": {
       "title": "الأمان",
       "changePassword": "تغيير كلمة المرور",
-      "changePasswordDesc": "غيّر كلمة مرورك"
+      "changePasswordDesc": "تحديث كلمة مرور حسابك",
+      "currentPassword": "كلمة المرور الحالية",
+      "newPassword": "كلمة المرور الجديدة",
+      "confirmPassword": "تأكيد كلمة المرور الجديدة",
+      "passwordHint": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "updatePassword": "تحديث كلمة المرور",
+      "passwordMismatch": "خطأ",
+      "passwordMismatchDesc": "كلمة المرور الجديدة وتأكيدها غير متطابقين",
+      "passwordTooShort": "خطأ",
+      "passwordTooShortDesc": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+      "passwordChanged": "نجاح",
+      "passwordChangedDesc": "تم تغيير كلمة المرور بنجاح",
+      "passwordError": "خطأ",
+      "passwordErrorDesc": "فشل في تغيير كلمة المرور"
+    },
+    "logout": {
+      "title": "تسجيل الخروج",
+      "description": "سيتم تسجيل خروجك من جميع الأجهزة",
+      "button": "تسجيل الخروج"
     },
     "language": {
       "title": "اللغة",
