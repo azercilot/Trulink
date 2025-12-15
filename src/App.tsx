@@ -13,7 +13,10 @@ import Templates from "./pages/Templates";
 import Settings from "./pages/Settings";
 import Support from "./pages/Support";
 import SignContract from "./pages/SignContract";
+import About from "./pages/About";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -33,6 +36,8 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
             <Route path="/support" element={<Support />} />
             <Route path="/sign/:token" element={<SignContract />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
