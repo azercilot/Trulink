@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, ArrowLeft, ChevronDown, Send, Loader2, MessageCircle, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Logo from '@/components/Logo';
-
+import { supabase } from '@/integrations/supabase/client';
 const Support = () => {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
@@ -31,16 +31,35 @@ const Support = () => {
     e.preventDefault();
     setSending(true);
     
-    // Simulate sending
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast({
-      title: t('support.contact.success'),
-      description: t('support.contact.successDesc'),
-    });
-    
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setSending(false);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-support-confirmation', {
+        body: {
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          language: i18n.language,
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: t('support.contact.success'),
+        description: t('support.contact.successDesc'),
+      });
+      
+      setFormData({ name: '', email: '', subject: '', message: '' });
+    } catch (error: any) {
+      console.error('Error sending support email:', error);
+      toast({
+        title: t('support.contact.error'),
+        description: t('support.contact.errorDesc'),
+        variant: 'destructive',
+      });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (

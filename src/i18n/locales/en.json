@@ -173,7 +173,9 @@
       "messagePlaceholder": "Write your message...",
       "send": "Send Message",
       "success": "Your message was sent successfully",
-      "successDesc": "Our support team will respond soon"
+      "successDesc": "A confirmation email has been sent to your address. Our support team will respond soon.",
+      "error": "Failed to Send",
+      "errorDesc": "There was a problem sending your message. Please try again."
     }
   },
   "common": {
