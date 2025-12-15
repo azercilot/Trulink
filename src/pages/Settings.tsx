@@ -506,15 +506,15 @@ const Settings = () => {
             
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
-                { code: 'fa', label: t('settings.language.fa'), flag: '🇮🇷' },
-                { code: 'en', label: t('settings.language.en'), flag: '🇬🇧' },
-                { code: 'ar', label: t('settings.language.ar'), flag: '🇸🇦' },
-                { code: 'zh', label: t('settings.language.zh'), flag: '🇨🇳' },
-                { code: 'es', label: t('settings.language.es'), flag: '🇪🇸' },
-                { code: 'de', label: t('settings.language.de'), flag: '🇩🇪' },
-                { code: 'fr', label: t('settings.language.fr'), flag: '🇫🇷' },
-                { code: 'ru', label: t('settings.language.ru'), flag: '🇷🇺' },
-                { code: 'pt', label: t('settings.language.pt'), flag: '🇧🇷' },
+                { code: 'fa', label: 'فارسی', flag: '🇮🇷' },
+                { code: 'en', label: 'English', flag: '🇬🇧' },
+                { code: 'ar', label: 'العربية', flag: '🇸🇦' },
+                { code: 'zh', label: '中文', flag: '🇨🇳' },
+                { code: 'es', label: 'Español', flag: '🇪🇸' },
+                { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+                { code: 'fr', label: 'Français', flag: '🇫🇷' },
+                { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+                { code: 'pt', label: 'Português', flag: '🇧🇷' },
               ].map((lang) => (
                 <button
                   key={lang.code}
