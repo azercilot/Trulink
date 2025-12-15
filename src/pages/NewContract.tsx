@@ -110,6 +110,7 @@ const NewContract = () => {
     
     setSubmitting(true);
     try {
+      // Create contract first (without party fields)
       const { data: contract, error: contractError } = await supabase
         .from('contracts')
         .insert({
@@ -117,10 +118,6 @@ const NewContract = () => {
           title: formData.title,
           description: formData.description,
           contract_type: formData.contract_type,
-          party_name: formData.party_name || null,
-          party_email: formData.party_email || null,
-          party_phone: formData.party_phone || null,
-          party_national_id: formData.party_national_id || null,
           total_amount: formData.total_amount ? parseFloat(formData.total_amount.replace(/,/g, '')) : null,
           status: 'draft',
         })
@@ -128,6 +125,23 @@ const NewContract = () => {
         .single();
 
       if (contractError) throw contractError;
+
+      // Insert party info into separate contract_parties table
+      if (contract && (formData.party_name || formData.party_email || formData.party_phone || formData.party_national_id)) {
+        const { error: partyError } = await supabase
+          .from('contract_parties')
+          .insert({
+            contract_id: contract.id,
+            party_name: formData.party_name || null,
+            party_email: formData.party_email || null,
+            party_phone: formData.party_phone || null,
+            party_national_id: formData.party_national_id || null,
+          });
+        
+        if (partyError) {
+          console.error('Error inserting party info:', partyError);
+        }
+      }
 
       if (files.length > 0 && contract) {
         for (const file of files) {
