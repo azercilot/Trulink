@@ -145,13 +145,13 @@ const Dashboard = () => {
     <div className="min-h-screen bg-muted/30" dir="rtl">
       {/* Sidebar */}
       <aside className="fixed top-0 right-0 h-full w-64 bg-background border-l border-border p-6 hidden lg:block">
-        <div className="flex items-center gap-2 mb-8">
+        <Link to="/" className="flex items-center gap-2 mb-8 hover:opacity-90 transition-opacity">
           <Logo size={40} />
           <span className="font-bold text-lg">
             <span className="text-foreground">Tru</span>
             <span className="text-accent">Link</span>
           </span>
-        </div>
+        </Link>
 
         <nav className="space-y-1">
           <Link to="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-accent/10 text-accent font-medium">
@@ -189,9 +189,9 @@ const Dashboard = () => {
         <header className="bg-background border-b border-border sticky top-0 z-40">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center gap-4">
-              <div className="lg:hidden flex items-center gap-2">
+              <Link to="/" className="lg:hidden flex items-center gap-2 hover:opacity-90 transition-opacity">
                 <Logo size={32} />
-              </div>
+              </Link>
               <h1 className="text-xl font-black">داشبورد</h1>
             </div>
 
@@ -240,10 +240,22 @@ const Dashboard = () => {
               </div>
 
               {/* User Menu */}
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+              <div className="flex items-center gap-3">
+                <Link 
+                  to="/settings" 
+                  className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-accent/10 transition-colors"
+                  title="تنظیمات"
+                >
                   <User className="w-5 h-5 text-muted-foreground" />
-                </div>
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors lg:hidden"
+                  title="خروج از حساب"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>خروج</span>
+                </button>
               </div>
             </div>
           </div>
