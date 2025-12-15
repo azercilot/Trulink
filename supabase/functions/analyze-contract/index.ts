@@ -90,21 +90,51 @@ Return response as JSON with this structure:
 }`;
 };
 
+const MAX_CONTRACT_LENGTH = 100000; // 100KB max
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { contractText, contractType, analysisType, language = 'fa' }: AnalysisRequest = await req.json();
+    const body = await req.json();
+    const { contractText, contractType, analysisType, language = 'fa' }: AnalysisRequest = body;
 
-    if (!contractText) {
-      throw new Error('Contract text is required');
+    // Input validation
+    if (!contractText || typeof contractText !== 'string') {
+      return new Response(
+        JSON.stringify({ error: 'Contract text is required and must be a string' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+
+    if (contractText.length > MAX_CONTRACT_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: `Contract text too long. Maximum ${MAX_CONTRACT_LENGTH} characters allowed.` }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!['risk', 'summary', 'both'].includes(analysisType)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid analysis type. Must be risk, summary, or both.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sanitize input - remove potential prompt injection patterns
+    const sanitizedText = contractText
+      .replace(/ignore (all |previous |above )?instructions/gi, '[FILTERED]')
+      .replace(/system prompt/gi, '[FILTERED]');
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+      console.error('LOVABLE_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Service configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const results: { riskAnalysis?: any; summary?: any } = {};
@@ -122,7 +152,7 @@ serve(async (req) => {
           model: 'google/gemini-2.5-flash',
           messages: [
             { role: 'system', content: getRiskAnalysisPrompt(contractType, language) },
-            { role: 'user', content: contractText }
+            { role: 'user', content: sanitizedText }
           ],
           response_format: { type: 'json_object' },
         }),
@@ -163,7 +193,7 @@ serve(async (req) => {
           model: 'google/gemini-2.5-flash',
           messages: [
             { role: 'system', content: getSummaryPrompt(contractType, language) },
-            { role: 'user', content: contractText }
+            { role: 'user', content: sanitizedText }
           ],
           response_format: { type: 'json_object' },
         }),

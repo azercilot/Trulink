@@ -16,21 +16,53 @@ interface AssistRequest {
   language?: string;
 }
 
+const MAX_TEXT_LENGTH = 50000; // 50KB max for input text
+const VALID_TYPES = ['suggest_title', 'suggest_description', 'suggest_terms', 'improve_text', 'explain_clause'];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { type, context, language = 'fa' }: AssistRequest = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const body = await req.json();
+    const { type, context, language = 'fa' }: AssistRequest = body;
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    // Input validation
+    if (!type || !VALID_TYPES.includes(type)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request type' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    const systemPrompt = getSystemPrompt(type, language);
-    const userPrompt = getUserPrompt(type, context, language);
+    // Validate context text lengths
+    if (context?.existingText && context.existingText.length > MAX_TEXT_LENGTH) {
+      return new Response(
+        JSON.stringify({ error: 'Text too long. Maximum 50KB allowed.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Sanitize input
+    const sanitizedContext = {
+      ...context,
+      existingText: context?.existingText
+        ?.replace(/ignore (all |previous |above )?instructions/gi, '[FILTERED]')
+        ?.replace(/system prompt/gi, '[FILTERED]'),
+    };
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      console.error('LOVABLE_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'Service configuration error' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+  const systemPrompt = getSystemPrompt(type, language);
+    const userPrompt = getUserPrompt(type, sanitizedContext, language);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
