@@ -3,8 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   FileText, ArrowRight, Edit, Trash2, Send, Check, 
-  Clock, User, Mail, Phone, CreditCard, Download, Upload, X, Loader2,
-  Lock, Copy, Brain, Shield
+  Clock, User, Mail, Phone, Download, Loader2,
+  Lock, Copy, Brain, Shield, Users
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +24,14 @@ interface ContractParty {
   party_email: string | null;
   party_phone: string | null;
   party_national_id: string | null;
+}
+
+interface ContractSignature {
+  id: string;
+  signer_email: string;
+  signer_name: string | null;
+  signed_at: string;
+  otp_verified: boolean | null;
 }
 
 interface Contract {
@@ -76,13 +84,15 @@ const ContractDetail = () => {
   const { t } = useTranslation();
   
   const [contract, setContract] = useState<Contract | null>(null);
-  const [contractParty, setContractParty] = useState<ContractParty | null>(null);
+  const [contractParties, setContractParties] = useState<ContractParty[]>([]);
+  const [signatures, setSignatures] = useState<ContractSignature[]>([]);
   const [files, setFiles] = useState<ContractFile[]>([]);
   const [verification, setVerification] = useState<PartyVerification | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [sendingSignature, setSendingSignature] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'ai' | 'kyc' | 'audit'>('details');
 
   useEffect(() => {
@@ -94,7 +104,8 @@ const ContractDetail = () => {
   useEffect(() => {
     if (user && id) {
       fetchContract();
-      fetchContractParty();
+      fetchContractParties();
+      fetchSignatures();
       fetchFiles();
       fetchVerification();
     }
@@ -131,18 +142,31 @@ const ContractDetail = () => {
     }
   };
 
-  const fetchContractParty = async () => {
+  const fetchContractParties = async () => {
     try {
       const { data, error } = await supabase
         .from('contract_parties')
         .select('*')
-        .eq('contract_id', id)
-        .maybeSingle();
+        .eq('contract_id', id);
 
-      if (error && error.code !== 'PGRST116') throw error;
-      setContractParty(data);
+      if (error) throw error;
+      setContractParties(data || []);
     } catch (error) {
-      console.error('Error fetching contract party:', error);
+      console.error('Error fetching contract parties:', error);
+    }
+  };
+
+  const fetchSignatures = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contract_signatures')
+        .select('id, signer_email, signer_name, signed_at, otp_verified')
+        .eq('contract_id', id);
+
+      if (error) throw error;
+      setSignatures(data || []);
+    } catch (error) {
+      console.error('Error fetching signatures:', error);
     }
   };
 
@@ -208,6 +232,7 @@ const ContractDetail = () => {
   const handleSendForSignature = async () => {
     if (!contract) return;
 
+    setSendingSignature(true);
     try {
       // Lock the contract when sending for signature
       const { error } = await supabase
@@ -222,11 +247,13 @@ const ContractDetail = () => {
         contract_id: contract.id,
         user_id: user!.id,
         action: 'sent_for_signature',
-        details: { status: 'pending' },
+        details: { status: 'pending', parties: contractParties.length },
       });
 
-      // Send email to party if email exists
-      if (contractParty?.party_email) {
+      // Get parties with emails
+      const partiesWithEmail = contractParties.filter(p => p.party_email);
+      
+      if (partiesWithEmail.length > 0) {
         // Get sender's name from profile
         const { data: profileData } = await supabase
           .from('profiles')
@@ -236,27 +263,29 @@ const ContractDetail = () => {
 
         const senderName = profileData?.company_name || profileData?.full_name || 'کاربر TruLink';
 
+        // Send emails to all parties using the multi-party format
         const { error: emailError } = await supabase.functions.invoke('send-signature-email', {
           body: {
             contractId: contract.id,
             contractTitle: contract.title,
-            partyName: contractParty.party_name || '',
-            partyEmail: contractParty.party_email,
+            parties: partiesWithEmail.map(p => ({
+              name: p.party_name || '',
+              email: p.party_email!,
+            })),
             senderName,
           },
         });
 
         if (emailError) {
-          console.error('Error sending signature email:', emailError);
-          // Don't fail the whole operation if email fails
+          console.error('Error sending signature emails:', emailError);
         }
       }
 
       setContract({ ...contract, status: 'pending', is_locked: true });
       toast({
         title: 'ارسال شد',
-        description: contractParty?.party_email 
-          ? 'قرارداد برای امضا ارسال و ایمیل به طرف قرارداد ارسال شد'
+        description: partiesWithEmail.length > 0 
+          ? `قرارداد برای امضا ارسال و ایمیل به ${partiesWithEmail.length} طرف قرارداد ارسال شد`
           : 'قرارداد برای امضا ارسال شد',
       });
     } catch (error) {
@@ -266,6 +295,8 @@ const ContractDetail = () => {
         description: 'در ارسال قرارداد مشکلی پیش آمد',
         variant: 'destructive',
       });
+    } finally {
+      setSendingSignature(false);
     }
   };
 
@@ -273,8 +304,6 @@ const ContractDetail = () => {
     if (!contract || !user) return;
 
     try {
-      // Create a new version of the contract
-      // Create new contract version
       const { data: newContract, error } = await supabase
         .from('contracts')
         .insert({
@@ -294,15 +323,17 @@ const ContractDetail = () => {
 
       if (error) throw error;
 
-      // Copy party info to new contract
-      if (contractParty && newContract) {
-        await supabase.from('contract_parties').insert({
-          contract_id: newContract.id,
-          party_name: contractParty.party_name,
-          party_email: contractParty.party_email,
-          party_phone: contractParty.party_phone,
-          party_national_id: contractParty.party_national_id,
-        });
+      // Copy all parties to new contract
+      if (contractParties.length > 0 && newContract) {
+        for (const party of contractParties) {
+          await supabase.from('contract_parties').insert({
+            contract_id: newContract.id,
+            party_name: party.party_name,
+            party_email: party.party_email,
+            party_phone: party.party_phone,
+            party_national_id: party.party_national_id,
+          });
+        }
       }
 
       toast({
@@ -326,15 +357,17 @@ const ContractDetail = () => {
 
     setAnalyzing(true);
     try {
-      // Build contract text from available metadata
+      const partiesText = contractParties.map((p, i) => `
+طرف ${i + 1}: ${p.party_name || 'ذکر نشده'}
+ایمیل: ${p.party_email || 'ذکر نشده'}
+تلفن: ${p.party_phone || 'ذکر نشده'}
+کد ملی: ${p.party_national_id || 'ذکر نشده'}`).join('\n');
+
       const contractText = `
 عنوان قرارداد: ${contract.title}
 نوع قرارداد: ${contract.contract_type}
 توضیحات: ${contract.description || 'ندارد'}
-نام طرف قرارداد: ${contractParty?.party_name || 'ذکر نشده'}
-ایمیل طرف قرارداد: ${contractParty?.party_email || 'ذکر نشده'}
-تلفن طرف قرارداد: ${contractParty?.party_phone || 'ذکر نشده'}
-کد ملی طرف قرارداد: ${contractParty?.party_national_id || 'ذکر نشده'}
+${partiesText}
 مبلغ کل: ${contract.total_amount ? `${contract.total_amount.toLocaleString('fa-IR')} ${contract.currency}` : 'ذکر نشده'}
 تاریخ ایجاد: ${new Date(contract.created_at).toLocaleDateString('fa-IR')}
 وضعیت: ${contract.status}
@@ -351,7 +384,6 @@ const ContractDetail = () => {
 
       if (error) throw error;
 
-      // Update contract with AI analysis results
       if (data) {
         await supabase
           .from('contracts')
@@ -362,7 +394,6 @@ const ContractDetail = () => {
           .eq('id', contract.id);
       }
 
-      // Refetch contract to get updated AI data
       await fetchContract();
 
       toast({
@@ -405,6 +436,14 @@ const ContractDetail = () => {
     }
   };
 
+  // Helper to check if a party has signed
+  const hasPartySigned = (email: string) => {
+    return signatures.some(s => s.signer_email === email);
+  };
+
+  // For PDF download - use first party for backward compatibility
+  const firstParty = contractParties[0] || null;
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
@@ -439,11 +478,10 @@ const ContractDetail = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {/* PDF Download Button - Always visible */}
             {user && (
               <PDFDownloadButton 
                 contract={contract} 
-                party={contractParty} 
+                party={firstParty} 
                 userId={user.id} 
               />
             )}
@@ -597,7 +635,7 @@ const ContractDetail = () => {
                         </div>
                         <button
                           onClick={() => downloadFile(file)}
-                          className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                          className="p-2 hover:bg-background rounded-lg transition-colors"
                         >
                           <Download className="w-4 h-4" />
                         </button>
@@ -607,19 +645,20 @@ const ContractDetail = () => {
                 )}
               </div>
 
-              {/* Send for Signature Button - Moved to bottom */}
+              {/* Send for Signature Button */}
               {contract.status === 'draft' && !contract.is_locked && (
                 <div className="bg-background rounded-2xl border border-border p-6">
                   <h3 className="font-semibold mb-3">ارسال برای امضا</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    با کلیک روی دکمه زیر، قرارداد قفل شده و لینک امضا به ایمیل طرف قرارداد ارسال می‌شود.
+                    با کلیک روی دکمه زیر، قرارداد قفل شده و لینک امضا به ایمیل {contractParties.length} طرف قرارداد ارسال می‌شود.
                   </p>
                   <Button
                     onClick={handleSendForSignature}
+                    disabled={sendingSignature}
                     className="w-full gap-2"
                     size="lg"
                   >
-                    <Send className="w-4 h-4" />
+                    {sendingSignature ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     ارسال برای امضا
                   </Button>
                 </div>
@@ -628,44 +667,93 @@ const ContractDetail = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
-              {/* Party Info */}
+              {/* Parties Info */}
               <div className="bg-background rounded-2xl border border-border p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">اطلاعات طرف قرارداد</h3>
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    طرفین قرارداد ({contractParties.length})
+                  </h3>
                   {verification && (
                     <VerificationStatus status={verification.verification_status} compact />
                   )}
                 </div>
-                {contractParty?.party_name ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                        <User className="w-5 h-5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{contractParty.party_name}</p>
-                        {contractParty.party_national_id && (
-                          <p className="text-sm text-muted-foreground">کد ملی: {contractParty.party_national_id}</p>
-                        )}
-                      </div>
-                    </div>
-                    {contractParty.party_email && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span dir="ltr">{contractParty.party_email}</span>
-                      </div>
-                    )}
-                    {contractParty.party_phone && (
-                      <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span dir="ltr">{contractParty.party_phone}</span>
-                      </div>
-                    )}
-                  </div>
+                {contractParties.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">طرفی ثبت نشده است</p>
                 ) : (
-                  <p className="text-muted-foreground text-sm">اطلاعاتی ثبت نشده است</p>
+                  <div className="space-y-4">
+                    {contractParties.map((party, index) => {
+                      const signed = party.party_email ? hasPartySigned(party.party_email) : false;
+                      return (
+                        <div key={party.id} className="border border-border rounded-xl p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs text-muted-foreground">طرف {index + 1}</span>
+                            {party.party_email && (
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                signed 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {signed ? 'امضا شده' : 'در انتظار امضا'}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+                              <User className="w-4 h-4 text-muted-foreground" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">{party.party_name || 'بدون نام'}</p>
+                              {party.party_national_id && (
+                                <p className="text-xs text-muted-foreground">کد ملی: {party.party_national_id}</p>
+                              )}
+                            </div>
+                          </div>
+                          {party.party_email && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Mail className="w-3 h-3" />
+                              <span dir="ltr">{party.party_email}</span>
+                            </div>
+                          )}
+                          {party.party_phone && (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                              <Phone className="w-3 h-3" />
+                              <span dir="ltr">{party.party_phone}</span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
+
+              {/* Signatures */}
+              {signatures.length > 0 && (
+                <div className="bg-background rounded-2xl border border-border p-6">
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    امضاهای ثبت شده ({signatures.length})
+                  </h3>
+                  <div className="space-y-3">
+                    {signatures.map((sig) => (
+                      <div key={sig.id} className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-green-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-green-800">
+                            {sig.signer_name || sig.signer_email}
+                          </p>
+                          <p className="text-xs text-green-600">
+                            {new Date(sig.signed_at).toLocaleDateString('fa-IR')} - {new Date(sig.signed_at).toLocaleTimeString('fa-IR')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Timeline */}
               <div className="bg-background rounded-2xl border border-border p-6">
@@ -689,7 +777,9 @@ const ContractDetail = () => {
                       </div>
                       <div>
                         <p className="text-sm font-medium">ارسال برای امضا</p>
-                        <p className="text-xs text-muted-foreground">در انتظار امضای طرفین</p>
+                        <p className="text-xs text-muted-foreground">
+                          در انتظار امضای {contractParties.length - signatures.length} طرف
+                        </p>
                       </div>
                     </div>
                   )}
@@ -736,7 +826,7 @@ const ContractDetail = () => {
               <VerificationStatus 
                 status={verification?.verification_status || 'not_checked'} 
               />
-              {!verification && contractParty?.party_national_id && (
+              {!verification && contractParties.some(p => p.party_national_id) && (
                 <p className="text-sm text-muted-foreground mt-4">
                   {t('kyc.notVerifiedYet')}
                 </p>

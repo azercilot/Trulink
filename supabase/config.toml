@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.validate-signature-token]
 verify_jwt = false
+
+[functions.send-signature-reminders]
+verify_jwt = false
