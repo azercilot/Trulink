@@ -134,6 +134,53 @@ export type Database = {
           },
         ]
       }
+      contract_signatures: {
+        Row: {
+          contract_id: string
+          id: string
+          ip_address: string | null
+          otp_verified: boolean | null
+          signature_data: string
+          signature_hash: string
+          signed_at: string
+          signer_email: string
+          signer_name: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          contract_id: string
+          id?: string
+          ip_address?: string | null
+          otp_verified?: boolean | null
+          signature_data: string
+          signature_hash: string
+          signed_at?: string
+          signer_email: string
+          signer_name?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          contract_id?: string
+          id?: string
+          ip_address?: string | null
+          otp_verified?: boolean | null
+          signature_data?: string
+          signature_hash?: string
+          signed_at?: string
+          signer_email?: string
+          signer_name?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signatures_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_templates: {
         Row: {
           category: string
@@ -182,6 +229,7 @@ export type Database = {
           created_at: string
           currency: string | null
           description: string | null
+          document_hash: string | null
           expires_at: string | null
           id: string
           is_locked: boolean | null
@@ -202,6 +250,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          document_hash?: string | null
           expires_at?: string | null
           id?: string
           is_locked?: boolean | null
@@ -222,6 +271,7 @@ export type Database = {
           created_at?: string
           currency?: string | null
           description?: string | null
+          document_hash?: string | null
           expires_at?: string | null
           id?: string
           is_locked?: boolean | null
@@ -356,6 +406,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      signature_tokens: {
+        Row: {
+          contract_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          otp_code: string | null
+          otp_sent_at: string | null
+          otp_verified: boolean | null
+          party_email: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          otp_code?: string | null
+          otp_sent_at?: string | null
+          otp_verified?: boolean | null
+          party_email: string
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          otp_code?: string | null
+          otp_sent_at?: string | null
+          otp_verified?: boolean | null
+          party_email?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_tokens_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_branding: {
         Row: {

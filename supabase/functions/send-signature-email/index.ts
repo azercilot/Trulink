@@ -17,6 +17,13 @@ interface SignatureEmailRequest {
   senderName: string;
 }
 
+// Generate a secure random token
+function generateToken(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -57,6 +64,35 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending signature email for contract ${contractId} to ${partyEmail}`);
 
+    // Generate signature token
+    const signatureToken = generateToken();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days expiry
+
+    // Store token in database using service role client
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { error: tokenError } = await serviceClient
+      .from('signature_tokens')
+      .insert({
+        contract_id: contractId,
+        party_email: partyEmail,
+        token: signatureToken,
+        expires_at: expiresAt.toISOString(),
+      });
+
+    if (tokenError) {
+      console.error('Error creating signature token:', tokenError);
+      throw new Error('Failed to create signature token');
+    }
+
+    // Build signature URL
+    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com').replace('https://bxarjqltzitfoumyqkhu', 'https://103e197c-ac94-48c1-8adf-69633dc289a9') || 'https://trulink.app';
+    const signatureUrl = `${siteUrl}/sign/${signatureToken}`;
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -96,8 +132,27 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 
                 <p style="color: #4a4a4a; line-height: 1.8; margin: 0 0 24px 0;">
-                  لطفاً برای مشاهده و امضای قرارداد، وارد پلتفرم TruLink شوید.
+                  برای مشاهده و امضای قرارداد، روی دکمه زیر کلیک کنید:
                 </p>
+                
+                <div style="text-align: center; margin-bottom: 24px;">
+                  <a href="${signatureUrl}" style="display: inline-block; background-color: #00C853; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                    مشاهده و امضای قرارداد
+                  </a>
+                </div>
+                
+                <p style="color: #888888; font-size: 12px; line-height: 1.6; margin: 0 0 16px 0;">
+                  اگر دکمه بالا کار نمی‌کند، لینک زیر را در مرورگر خود کپی کنید:
+                </p>
+                <p style="color: #00C853; font-size: 12px; word-break: break-all; margin: 0 0 24px 0;">
+                  ${signatureUrl}
+                </p>
+                
+                <div style="background-color: #FFF3E0; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                  <p style="color: #E65100; font-size: 14px; margin: 0;">
+                    ⚠️ این لینک تا ۷ روز معتبر است. پس از آن منقضی خواهد شد.
+                  </p>
+                </div>
                 
                 <div style="text-align: center; margin-top: 32px;">
                   <p style="color: #888888; font-size: 12px; margin: 0;">
