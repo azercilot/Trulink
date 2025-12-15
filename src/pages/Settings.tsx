@@ -9,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import BrandingSection from '@/components/branding/BrandingSection';
+import AdvancedBrandingSection from '@/components/branding/AdvancedBrandingSection';
+
 interface Profile {
   id: string;
   full_name: string | null;
@@ -663,7 +665,7 @@ const Settings = () => {
           </div>
 
           {/* Branding Section */}
-          <BrandingSection userId={user?.id || ''} />
+          <AdvancedBrandingSection userId={user?.id || ''} />
 
           {/* Logout Section */}
           <div className="bg-background rounded-2xl border border-red-200 p-6">
