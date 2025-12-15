@@ -14,9 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      contract_audit_logs: {
+        Row: {
+          action: string
+          contract_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          contract_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          contract_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_audit_logs_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_files: {
         Row: {
           contract_id: string
+          file_label: string | null
           file_name: string
           file_path: string
           file_size: number | null
@@ -26,6 +68,7 @@ export type Database = {
         }
         Insert: {
           contract_id: string
+          file_label?: string | null
           file_name: string
           file_path: string
           file_size?: number | null
@@ -35,6 +78,7 @@ export type Database = {
         }
         Update: {
           contract_id?: string
+          file_label?: string | null
           file_name?: string
           file_path?: string
           file_size?: number | null
@@ -62,6 +106,8 @@ export type Database = {
           id: string
           is_public: boolean
           name: string
+          sub_category: string | null
+          tags: string[] | null
         }
         Insert: {
           category: string
@@ -72,6 +118,8 @@ export type Database = {
           id?: string
           is_public?: boolean
           name: string
+          sub_category?: string | null
+          tags?: string[] | null
         }
         Update: {
           category?: string
@@ -82,11 +130,15 @@ export type Database = {
           id?: string
           is_public?: boolean
           name?: string
+          sub_category?: string | null
+          tags?: string[] | null
         }
         Relationships: []
       }
       contracts: {
         Row: {
+          ai_risk_analysis: Json | null
+          ai_summary: string | null
           content: Json | null
           contract_type: string
           created_at: string
@@ -94,6 +146,8 @@ export type Database = {
           description: string | null
           expires_at: string | null
           id: string
+          is_locked: boolean | null
+          parent_contract_id: string | null
           party_email: string | null
           party_name: string | null
           party_national_id: string | null
@@ -104,8 +158,11 @@ export type Database = {
           total_amount: number | null
           updated_at: string
           user_id: string
+          version: number | null
         }
         Insert: {
+          ai_risk_analysis?: Json | null
+          ai_summary?: string | null
           content?: Json | null
           contract_type: string
           created_at?: string
@@ -113,6 +170,8 @@ export type Database = {
           description?: string | null
           expires_at?: string | null
           id?: string
+          is_locked?: boolean | null
+          parent_contract_id?: string | null
           party_email?: string | null
           party_name?: string | null
           party_national_id?: string | null
@@ -123,8 +182,11 @@ export type Database = {
           total_amount?: number | null
           updated_at?: string
           user_id: string
+          version?: number | null
         }
         Update: {
+          ai_risk_analysis?: Json | null
+          ai_summary?: string | null
           content?: Json | null
           contract_type?: string
           created_at?: string
@@ -132,6 +194,8 @@ export type Database = {
           description?: string | null
           expires_at?: string | null
           id?: string
+          is_locked?: boolean | null
+          parent_contract_id?: string | null
           party_email?: string | null
           party_name?: string | null
           party_national_id?: string | null
@@ -142,8 +206,17 @@ export type Database = {
           total_amount?: number | null
           updated_at?: string
           user_id?: string
+          version?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contracts_parent_contract_id_fkey"
+            columns: ["parent_contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -177,6 +250,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      party_verifications: {
+        Row: {
+          birth_date: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          national_id: string
+          verification_result: Json | null
+          verification_status: string
+          verified_at: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          national_id: string
+          verification_result?: Json | null
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          national_id?: string
+          verification_result?: Json | null
+          verification_status?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "party_verifications_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -212,6 +326,33 @@ export type Database = {
           id?: string
           national_id?: string | null
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_branding: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          primary_color: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string | null
           updated_at?: string
           user_id?: string
         }
