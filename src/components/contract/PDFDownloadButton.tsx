@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Download, Loader2, FileText } from 'lucide-react';
+import { Download, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { generateContractPDF } from '@/lib/pdfGenerator';
+import { Button } from '@/components/ui/button';
 
 interface PDFDownloadButtonProps {
   contract: {
@@ -119,18 +120,19 @@ const PDFDownloadButton = ({ contract, party, userId }: PDFDownloadButtonProps) 
   };
 
   return (
-    <button
+    <Button
       onClick={handleDownload}
       disabled={generating}
-      className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:brightness-110 transition-colors disabled:opacity-50"
+      size="sm"
+      className="gap-1.5"
     >
       {generating ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
       ) : (
-        <Download className="w-4 h-4" />
+        <Download className="w-3.5 h-3.5" />
       )}
       {t('pdf.download')}
-    </button>
+    </Button>
   );
 };
 
