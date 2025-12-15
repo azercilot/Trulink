@@ -266,19 +266,41 @@ const ContractDetail = () => {
 
     setAnalyzing(true);
     try {
+      // Build contract text from available metadata
+      const contractText = `
+عنوان قرارداد: ${contract.title}
+نوع قرارداد: ${contract.contract_type}
+توضیحات: ${contract.description || 'ندارد'}
+نام طرف قرارداد: ${contract.party_name || 'ذکر نشده'}
+ایمیل طرف قرارداد: ${contract.party_email || 'ذکر نشده'}
+تلفن طرف قرارداد: ${contract.party_phone || 'ذکر نشده'}
+کد ملی طرف قرارداد: ${contract.party_national_id || 'ذکر نشده'}
+مبلغ کل: ${contract.total_amount ? `${contract.total_amount.toLocaleString('fa-IR')} ${contract.currency}` : 'ذکر نشده'}
+تاریخ ایجاد: ${new Date(contract.created_at).toLocaleDateString('fa-IR')}
+وضعیت: ${contract.status}
+      `.trim();
+
       const { data, error } = await supabase.functions.invoke('analyze-contract', {
         body: {
-          contractId: contract.id,
-          title: contract.title,
-          description: contract.description,
+          contractText,
           contractType: contract.contract_type,
-          partyName: contract.party_name,
-          totalAmount: contract.total_amount,
-          currency: contract.currency,
+          analysisType: 'both',
+          language: 'fa',
         },
       });
 
       if (error) throw error;
+
+      // Update contract with AI analysis results
+      if (data) {
+        await supabase
+          .from('contracts')
+          .update({
+            ai_risk_analysis: data.riskAnalysis,
+            ai_summary: data.summary?.simpleSummary || JSON.stringify(data.summary),
+          })
+          .eq('id', contract.id);
+      }
 
       // Refetch contract to get updated AI data
       await fetchContract();
