@@ -98,7 +98,11 @@
       "companyName": "نام شرکت",
       "companyNamePlaceholder": "نام شرکت (اختیاری)",
       "nationalId": "کد ملی",
-      "save": "ذخیره تغییرات"
+      "save": "ذخیره تغییرات",
+      "gender": "جنسیت",
+      "genderMale": "مرد",
+      "genderFemale": "زن",
+      "genderOther": "سایر"
     },
     "notifications": {
       "title": "اعلان‌ها",

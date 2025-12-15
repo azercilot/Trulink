@@ -98,7 +98,11 @@
       "companyName": "Company Name",
       "companyNamePlaceholder": "Company name (optional)",
       "nationalId": "National ID",
-      "save": "Save Changes"
+      "save": "Save Changes",
+      "gender": "Gender",
+      "genderMale": "Male",
+      "genderFemale": "Female",
+      "genderOther": "Other"
     },
     "notifications": {
       "title": "Notifications",
