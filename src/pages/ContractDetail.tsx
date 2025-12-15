@@ -14,6 +14,7 @@ import ContractSummaryPanel from '@/components/ai/ContractSummaryPanel';
 import VerificationStatus from '@/components/kyc/VerificationStatus';
 import DocumentChecklist from '@/components/kyc/DocumentChecklist';
 import AuditTrail from '@/components/audit/AuditTrail';
+import PDFDownloadButton from '@/components/contract/PDFDownloadButton';
 import { Json } from '@/integrations/supabase/types';
 
 interface ContractParty {
@@ -408,6 +409,15 @@ const ContractDetail = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
+            {/* PDF Download Button - Always visible */}
+            {user && (
+              <PDFDownloadButton 
+                contract={contract} 
+                party={contractParty} 
+                userId={user.id} 
+              />
+            )}
+            
             {contract.is_locked && (
               <button
                 onClick={handleCreateNewVersion}
@@ -422,7 +432,7 @@ const ContractDetail = () => {
                 <button
                   onClick={handleAnalyzeContract}
                   disabled={analyzing}
-                  className="flex items-center gap-2 bg-accent text-accent-foreground px-4 py-2 rounded-lg font-medium hover:brightness-110 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 bg-muted text-foreground px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
                 >
                   {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
                   {t('ai.analyzeContract')}

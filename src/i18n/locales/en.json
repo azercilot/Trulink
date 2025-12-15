@@ -364,5 +364,12 @@
     "locked": "Locked",
     "createNew": "Create New Version",
     "history": "Version History"
+  },
+  "pdf": {
+    "download": "Download PDF",
+    "downloadSuccess": "PDF Created",
+    "downloadSuccessDesc": "Contract PDF downloaded successfully",
+    "downloadError": "PDF Creation Error",
+    "downloadErrorDesc": "Failed to create PDF file"
   }
 }
