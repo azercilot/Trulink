@@ -11,14 +11,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Logo from '@/components/Logo';
 
+interface ContractParty {
+  party_name: string | null;
+}
+
 interface Contract {
   id: string;
   title: string;
   contract_type: string;
   status: string;
-  party_name: string | null;
   created_at: string;
   updated_at: string;
+  contract_parties: ContractParty[];
 }
 
 interface Notification {
@@ -66,7 +70,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('contracts')
-        .select('*')
+        .select('id, title, contract_type, status, created_at, updated_at, contract_parties(party_name)')
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -119,8 +123,9 @@ const Dashboard = () => {
   };
 
   const filteredContracts = contracts.filter(contract => {
+    const partyName = contract.contract_parties?.[0]?.party_name || '';
     const matchesSearch = contract.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (contract.party_name && contract.party_name.toLowerCase().includes(searchQuery.toLowerCase()));
+      partyName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || contract.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -370,10 +375,10 @@ const Dashboard = () => {
                         <h3 className="font-medium">{contract.title}</h3>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground font-light mt-1">
                           <span>{contract.contract_type}</span>
-                          {contract.party_name && (
+                          {contract.contract_parties?.[0]?.party_name && (
                             <>
                               <span>•</span>
-                              <span>{contract.party_name}</span>
+                              <span>{contract.contract_parties[0].party_name}</span>
                             </>
                           )}
                         </div>

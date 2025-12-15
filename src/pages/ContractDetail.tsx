@@ -16,16 +16,20 @@ import DocumentChecklist from '@/components/kyc/DocumentChecklist';
 import AuditTrail from '@/components/audit/AuditTrail';
 import { Json } from '@/integrations/supabase/types';
 
+interface ContractParty {
+  id: string;
+  party_name: string | null;
+  party_email: string | null;
+  party_phone: string | null;
+  party_national_id: string | null;
+}
+
 interface Contract {
   id: string;
   title: string;
   description: string | null;
   contract_type: string;
   status: string;
-  party_name: string | null;
-  party_email: string | null;
-  party_phone: string | null;
-  party_national_id: string | null;
   total_amount: number | null;
   currency: string;
   signed_at: string | null;
@@ -70,6 +74,7 @@ const ContractDetail = () => {
   const { t } = useTranslation();
   
   const [contract, setContract] = useState<Contract | null>(null);
+  const [contractParty, setContractParty] = useState<ContractParty | null>(null);
   const [files, setFiles] = useState<ContractFile[]>([]);
   const [verification, setVerification] = useState<PartyVerification | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,6 +92,7 @@ const ContractDetail = () => {
   useEffect(() => {
     if (user && id) {
       fetchContract();
+      fetchContractParty();
       fetchFiles();
       fetchVerification();
     }
@@ -96,7 +102,7 @@ const ContractDetail = () => {
     try {
       const { data, error } = await supabase
         .from('contracts')
-        .select('*')
+        .select('id, title, description, contract_type, status, total_amount, currency, signed_at, created_at, updated_at, ai_summary, ai_risk_analysis, version, is_locked, parent_contract_id')
         .eq('id', id)
         .maybeSingle();
 
@@ -120,6 +126,21 @@ const ContractDetail = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchContractParty = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contract_parties')
+        .select('*')
+        .eq('contract_id', id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      setContractParty(data);
+    } catch (error) {
+      console.error('Error fetching contract party:', error);
     }
   };
 
@@ -222,17 +243,14 @@ const ContractDetail = () => {
 
     try {
       // Create a new version of the contract
-      const { data, error } = await supabase
+      // Create new contract version
+      const { data: newContract, error } = await supabase
         .from('contracts')
         .insert({
           user_id: user.id,
           title: contract.title,
           description: contract.description,
           contract_type: contract.contract_type,
-          party_name: contract.party_name,
-          party_email: contract.party_email,
-          party_phone: contract.party_phone,
-          party_national_id: contract.party_national_id,
           total_amount: contract.total_amount,
           currency: contract.currency,
           status: 'draft',
@@ -245,12 +263,23 @@ const ContractDetail = () => {
 
       if (error) throw error;
 
+      // Copy party info to new contract
+      if (contractParty && newContract) {
+        await supabase.from('contract_parties').insert({
+          contract_id: newContract.id,
+          party_name: contractParty.party_name,
+          party_email: contractParty.party_email,
+          party_phone: contractParty.party_phone,
+          party_national_id: contractParty.party_national_id,
+        });
+      }
+
       toast({
         title: t('versioning.newVersionCreated'),
         description: t('versioning.newVersionCreatedDesc'),
       });
 
-      navigate(`/contracts/${data.id}`);
+      navigate(`/contracts/${newContract.id}`);
     } catch (error) {
       console.error('Error creating new version:', error);
       toast({
@@ -271,10 +300,10 @@ const ContractDetail = () => {
 عنوان قرارداد: ${contract.title}
 نوع قرارداد: ${contract.contract_type}
 توضیحات: ${contract.description || 'ندارد'}
-نام طرف قرارداد: ${contract.party_name || 'ذکر نشده'}
-ایمیل طرف قرارداد: ${contract.party_email || 'ذکر نشده'}
-تلفن طرف قرارداد: ${contract.party_phone || 'ذکر نشده'}
-کد ملی طرف قرارداد: ${contract.party_national_id || 'ذکر نشده'}
+نام طرف قرارداد: ${contractParty?.party_name || 'ذکر نشده'}
+ایمیل طرف قرارداد: ${contractParty?.party_email || 'ذکر نشده'}
+تلفن طرف قرارداد: ${contractParty?.party_phone || 'ذکر نشده'}
+کد ملی طرف قرارداد: ${contractParty?.party_national_id || 'ذکر نشده'}
 مبلغ کل: ${contract.total_amount ? `${contract.total_amount.toLocaleString('fa-IR')} ${contract.currency}` : 'ذکر نشده'}
 تاریخ ایجاد: ${new Date(contract.created_at).toLocaleDateString('fa-IR')}
 وضعیت: ${contract.status}
@@ -550,29 +579,29 @@ const ContractDetail = () => {
                     <VerificationStatus status={verification.verification_status} compact />
                   )}
                 </div>
-                {contract.party_name ? (
+                {contractParty?.party_name ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
                         <User className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="font-medium">{contract.party_name}</p>
-                        {contract.party_national_id && (
-                          <p className="text-sm text-muted-foreground">کد ملی: {contract.party_national_id}</p>
+                        <p className="font-medium">{contractParty.party_name}</p>
+                        {contractParty.party_national_id && (
+                          <p className="text-sm text-muted-foreground">کد ملی: {contractParty.party_national_id}</p>
                         )}
                       </div>
                     </div>
-                    {contract.party_email && (
+                    {contractParty.party_email && (
                       <div className="flex items-center gap-3 text-sm">
                         <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span dir="ltr">{contract.party_email}</span>
+                        <span dir="ltr">{contractParty.party_email}</span>
                       </div>
                     )}
-                    {contract.party_phone && (
+                    {contractParty.party_phone && (
                       <div className="flex items-center gap-3 text-sm">
                         <Phone className="w-4 h-4 text-muted-foreground" />
-                        <span dir="ltr">{contract.party_phone}</span>
+                        <span dir="ltr">{contractParty.party_phone}</span>
                       </div>
                     )}
                   </div>
@@ -650,7 +679,7 @@ const ContractDetail = () => {
               <VerificationStatus 
                 status={verification?.verification_status || 'not_checked'} 
               />
-              {!verification && contract.party_national_id && (
+              {!verification && contractParty?.party_national_id && (
                 <p className="text-sm text-muted-foreground mt-4">
                   {t('kyc.notVerifiedYet')}
                 </p>

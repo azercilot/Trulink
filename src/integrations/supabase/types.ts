@@ -96,6 +96,44 @@ export type Database = {
           },
         ]
       }
+      contract_parties: {
+        Row: {
+          contract_id: string
+          created_at: string
+          id: string
+          party_email: string | null
+          party_name: string | null
+          party_national_id: string | null
+          party_phone: string | null
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          id?: string
+          party_email?: string | null
+          party_name?: string | null
+          party_national_id?: string | null
+          party_phone?: string | null
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          id?: string
+          party_email?: string | null
+          party_name?: string | null
+          party_national_id?: string | null
+          party_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_parties_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contract_templates: {
         Row: {
           category: string
@@ -148,10 +186,6 @@ export type Database = {
           id: string
           is_locked: boolean | null
           parent_contract_id: string | null
-          party_email: string | null
-          party_name: string | null
-          party_national_id: string | null
-          party_phone: string | null
           signed_at: string | null
           status: string
           title: string
@@ -172,10 +206,6 @@ export type Database = {
           id?: string
           is_locked?: boolean | null
           parent_contract_id?: string | null
-          party_email?: string | null
-          party_name?: string | null
-          party_national_id?: string | null
-          party_phone?: string | null
           signed_at?: string | null
           status?: string
           title: string
@@ -196,10 +226,6 @@ export type Database = {
           id?: string
           is_locked?: boolean | null
           parent_contract_id?: string | null
-          party_email?: string | null
-          party_name?: string | null
-          party_national_id?: string | null
-          party_phone?: string | null
           signed_at?: string | null
           status?: string
           title?: string
