@@ -376,5 +376,12 @@
     "locked": "قفل شده",
     "createNew": "ایجاد نسخه جدید",
     "history": "تاریخچه نسخه‌ها"
+  },
+  "pdf": {
+    "download": "دانلود PDF",
+    "downloadSuccess": "PDF ایجاد شد",
+    "downloadSuccessDesc": "فایل PDF قرارداد با موفقیت دانلود شد",
+    "downloadError": "خطا در ایجاد PDF",
+    "downloadErrorDesc": "در ایجاد فایل PDF مشکلی پیش آمد"
   }
 }

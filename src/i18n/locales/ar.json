@@ -293,5 +293,12 @@
     "locked": "مقفل",
     "createNew": "إنشاء نسخة جديدة",
     "history": "سجل النسخ"
+  },
+  "pdf": {
+    "download": "تحميل PDF",
+    "downloadSuccess": "تم إنشاء PDF",
+    "downloadSuccessDesc": "تم تحميل ملف PDF للعقد بنجاح",
+    "downloadError": "خطأ في إنشاء PDF",
+    "downloadErrorDesc": "فشل في إنشاء ملف PDF"
   }
 }
