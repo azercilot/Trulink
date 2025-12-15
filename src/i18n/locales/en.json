@@ -70,6 +70,24 @@
   },
   "settings": {
     "title": "Settings",
+    "avatar": {
+      "title": "Profile Picture",
+      "upload": "Upload Image",
+      "change": "Change Image",
+      "remove": "Remove Image",
+      "hint": "Allowed formats: JPG, PNG, GIF - Max 2MB",
+      "uploaded": "Image Uploaded",
+      "uploadedDesc": "Your profile picture has been updated",
+      "removed": "Image Removed",
+      "removedDesc": "Your profile picture has been removed",
+      "uploadError": "Upload Error",
+      "uploadErrorDesc": "Failed to upload image",
+      "removeError": "Failed to remove image",
+      "invalidType": "Invalid Format",
+      "invalidTypeDesc": "Please select an image file",
+      "tooLarge": "File Too Large",
+      "tooLargeDesc": "Maximum allowed size is 2MB"
+    },
     "profile": {
       "title": "Personal Information",
       "email": "Email",

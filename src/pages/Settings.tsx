@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   ArrowRight, ArrowLeft, User, Mail, Phone, Building, CreditCard, 
-  Bell, Lock, Loader2, Check, Globe
+  Bell, Lock, Loader2, Check, Globe, Camera, Trash2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +15,7 @@ interface Profile {
   phone: string | null;
   company_name: string | null;
   national_id: string | null;
+  avatar_url: string | null;
 }
 
 const Settings = () => {
@@ -28,6 +29,9 @@ const Settings = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -58,6 +62,7 @@ const Settings = () => {
       if (error) throw error;
       if (data) {
         setProfile(data);
+        setAvatarUrl(data.avatar_url);
         setFormData({
           full_name: data.full_name || '',
           phone: data.phone || '',
@@ -115,6 +120,110 @@ const Settings = () => {
     localStorage.setItem('language', lang);
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: t('settings.avatar.invalidType'),
+        description: t('settings.avatar.invalidTypeDesc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: t('settings.avatar.tooLarge'),
+        description: t('settings.avatar.tooLargeDesc'),
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile with avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl + '?t=' + Date.now()); // Add timestamp to bust cache
+      toast({
+        title: t('settings.avatar.uploaded'),
+        description: t('settings.avatar.uploadedDesc'),
+      });
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      toast({
+        title: t('settings.avatar.uploadError'),
+        description: t('settings.avatar.uploadErrorDesc'),
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!user) return;
+
+    setUploadingAvatar(true);
+    try {
+      // List files in user's folder
+      const { data: files } = await supabase.storage
+        .from('avatars')
+        .list(user.id);
+
+      // Delete all avatar files
+      if (files && files.length > 0) {
+        const filesToDelete = files.map(f => `${user.id}/${f.name}`);
+        await supabase.storage.from('avatars').remove(filesToDelete);
+      }
+
+      // Update profile
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('user_id', user.id);
+
+      setAvatarUrl(null);
+      toast({
+        title: t('settings.avatar.removed'),
+        description: t('settings.avatar.removedDesc'),
+      });
+    } catch (error) {
+      console.error('Error removing avatar:', error);
+      toast({
+        title: t('settings.avatar.removeError'),
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center" dir={isRTL ? 'rtl' : 'ltr'}>
@@ -139,6 +248,61 @@ const Settings = () => {
 
       <div className="container-narrow py-8">
         <div className="max-w-2xl">
+          {/* Avatar Section */}
+          <div className="bg-background rounded-2xl border border-border p-6 mb-6">
+            <h2 className="font-semibold text-lg mb-6">{t('settings.avatar.title')}</h2>
+            
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-muted flex items-center justify-center overflow-hidden border-2 border-border">
+                  {avatarUrl ? (
+                    <img 
+                      src={avatarUrl} 
+                      alt="Avatar" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-10 h-10 text-muted-foreground" />
+                  )}
+                </div>
+                {uploadingAvatar && (
+                  <div className="absolute inset-0 bg-background/80 rounded-full flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-accent" />
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex flex-col gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-accent text-accent-foreground font-medium hover:brightness-110 transition-all disabled:opacity-50"
+                >
+                  <Camera className="w-4 h-4" />
+                  {avatarUrl ? t('settings.avatar.change') : t('settings.avatar.upload')}
+                </button>
+                {avatarUrl && (
+                  <button
+                    onClick={handleRemoveAvatar}
+                    disabled={uploadingAvatar}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 font-medium hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {t('settings.avatar.remove')}
+                  </button>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">{t('settings.avatar.hint')}</p>
+          </div>
+
           {/* Profile Section */}
           <div className="bg-background rounded-2xl border border-border p-6 mb-6">
             <h2 className="font-semibold text-lg mb-6">{t('settings.profile.title')}</h2>
