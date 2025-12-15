@@ -48,54 +48,38 @@ const SignContract = () => {
 
   const validateToken = async () => {
     try {
-      // Fetch token data
-      const { data: tokenResult, error: tokenError } = await supabase
-        .from('signature_tokens')
-        .select('*')
-        .eq('token', token)
-        .maybeSingle();
+      // Use edge function to validate token securely (bypasses public RLS)
+      const { data, error: funcError } = await supabase.functions.invoke('validate-signature-token', {
+        body: { token },
+      });
 
-      if (tokenError) throw tokenError;
+      if (funcError) throw funcError;
 
-      if (!tokenResult) {
-        setError(t('signature.invalidToken', 'لینک امضا نامعتبر است'));
+      if (!data.valid) {
+        // Handle specific error types
+        switch (data.error) {
+          case 'invalid_token':
+            setError(t('signature.invalidToken', 'لینک امضا نامعتبر است'));
+            break;
+          case 'token_expired':
+            setError(t('signature.tokenExpired', 'لینک امضا منقضی شده است'));
+            break;
+          case 'already_signed':
+            setError(t('signature.alreadySigned', 'این قرارداد قبلاً امضا شده است'));
+            break;
+          case 'contract_not_found':
+            setError(t('signature.contractNotFound', 'قرارداد یافت نشد'));
+            break;
+          default:
+            setError(t('signature.loadError', 'در بارگذاری قرارداد مشکلی پیش آمد'));
+        }
         setLoading(false);
         return;
       }
 
-      // Check if token is expired
-      if (new Date(tokenResult.expires_at) < new Date()) {
-        setError(t('signature.tokenExpired', 'لینک امضا منقضی شده است'));
-        setLoading(false);
-        return;
-      }
-
-      // Check if already used
-      if (tokenResult.used_at) {
-        setError(t('signature.alreadySigned', 'این قرارداد قبلاً امضا شده است'));
-        setLoading(false);
-        return;
-      }
-
-      setTokenData(tokenResult);
-      setOtpVerified(tokenResult.otp_verified);
-
-      // Fetch contract data
-      const { data: contractResult, error: contractError } = await supabase
-        .from('contracts')
-        .select('id, title, description, contract_type, total_amount, currency')
-        .eq('id', tokenResult.contract_id)
-        .maybeSingle();
-
-      if (contractError) throw contractError;
-
-      if (!contractResult) {
-        setError(t('signature.contractNotFound', 'قرارداد یافت نشد'));
-        setLoading(false);
-        return;
-      }
-
-      setContract(contractResult);
+      setTokenData(data.tokenData);
+      setOtpVerified(data.tokenData.otp_verified);
+      setContract(data.contract);
     } catch (err) {
       console.error('Error validating token:', err);
       setError(t('signature.loadError', 'در بارگذاری قرارداد مشکلی پیش آمد'));
