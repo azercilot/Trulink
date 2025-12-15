@@ -172,10 +172,11 @@ const NewContract = () => {
   }
 
   const steps = [
-    { number: 1, title: 'انتخاب قالب' },
-    { number: 2, title: 'اطلاعات قرارداد' },
-    { number: 3, title: 'اطلاعات طرف مقابل' },
-    { number: 4, title: 'پیوست‌ها' },
+    { number: 1, title: t('newContract.step1') },
+    { number: 2, title: t('newContract.step2') },
+    { number: 3, title: t('newContract.step3') },
+    { number: 4, title: t('newContract.step4') },
+    { number: 5, title: t('newContract.step5') },
   ];
 
   return (
@@ -251,42 +252,58 @@ const NewContract = () => {
             </div>
           )}
 
-          {/* Step 2: Contract Details */}
+          {/* Step 2: Contract Details with AI */}
           {step === 2 && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">اطلاعات قرارداد</h2>
+              <h2 className="text-xl font-semibold mb-6">{t('newContract.contractDetails')}</h2>
               <div className="space-y-6 max-w-xl">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">عنوان قرارداد</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium">{t('newContract.title')}</label>
+                    <AIAssistButton
+                      type="suggest_title"
+                      context={{ contractType: formData.contract_type, partyName: formData.party_name }}
+                      onSuggestion={(suggestion) => setFormData(prev => ({ ...prev, title: suggestion }))}
+                      variant="inline"
+                    />
+                  </div>
                   <input
                     type="text"
                     name="title"
                     value={formData.title}
                     onChange={handleChange}
                     className="w-full h-12 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="مثال: قرارداد فروش خودرو پژو 206"
+                    placeholder={t('newContract.titlePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">توضیحات</label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium">{t('newContract.description')}</label>
+                    <AIAssistButton
+                      type="suggest_description"
+                      context={{ contractType: formData.contract_type, amount: formData.total_amount }}
+                      onSuggestion={(suggestion) => setFormData(prev => ({ ...prev, description: suggestion }))}
+                      variant="inline"
+                    />
+                  </div>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
                     rows={4}
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                    placeholder="توضیحات تکمیلی درباره قرارداد..."
+                    placeholder={t('newContract.descriptionPlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">مبلغ کل (تومان)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('newContract.amount')}</label>
                   <input
                     type="text"
                     name="total_amount"
                     value={formData.total_amount}
                     onChange={handleChange}
                     className="w-full h-12 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="مثال: 500,000,000"
+                    placeholder={t('newContract.amountPlaceholder')}
                     dir="ltr"
                   />
                 </div>
@@ -294,24 +311,24 @@ const NewContract = () => {
             </div>
           )}
 
-          {/* Step 3: Party Details */}
+          {/* Step 3: Party Details with KYC */}
           {step === 3 && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">اطلاعات طرف مقابل</h2>
+              <h2 className="text-xl font-semibold mb-6">{t('newContract.partyDetails')}</h2>
               <div className="space-y-6 max-w-xl">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">نام و نام خانوادگی</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('newContract.partyName')}</label>
                   <input
                     type="text"
                     name="party_name"
                     value={formData.party_name}
                     onChange={handleChange}
                     className="w-full h-12 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="نام کامل طرف قرارداد"
+                    placeholder={t('newContract.partyNamePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">ایمیل</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('newContract.partyEmail')}</label>
                   <input
                     type="email"
                     name="party_email"
@@ -323,7 +340,7 @@ const NewContract = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">شماره تماس</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('newContract.partyPhone')}</label>
                   <input
                     type="tel"
                     name="party_phone"
@@ -334,17 +351,43 @@ const NewContract = () => {
                     dir="ltr"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">کد ملی</label>
-                  <input
-                    type="text"
-                    name="party_national_id"
-                    value={formData.party_national_id}
-                    onChange={handleChange}
-                    className="w-full h-12 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-                    placeholder="0123456789"
-                    dir="ltr"
-                  />
+                
+                {/* KYC Fields */}
+                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Shield className="w-5 h-5 text-blue-600" />
+                    <span className="font-medium text-blue-800">{t('kyc.sectionTitle')}</span>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">{t('kyc.nationalId')}</label>
+                      <input
+                        type="text"
+                        name="party_national_id"
+                        value={formData.party_national_id}
+                        onChange={handleChange}
+                        className="w-full h-11 px-4 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                        placeholder="0123456789"
+                        dir="ltr"
+                        maxLength={10}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">{t('kyc.birthDate')}</label>
+                      <div className="relative">
+                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <input
+                          type="date"
+                          name="party_birth_date"
+                          value={formData.party_birth_date}
+                          onChange={handleChange}
+                          className="w-full h-11 px-4 pr-11 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                          dir="ltr"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -353,7 +396,7 @@ const NewContract = () => {
           {/* Step 4: Attachments */}
           {step === 4 && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">پیوست‌ها</h2>
+              <h2 className="text-xl font-semibold mb-6">{t('newContract.attachments')}</h2>
               <div className="max-w-xl">
                 <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
                   <input
@@ -368,8 +411,8 @@ const NewContract = () => {
                     className="cursor-pointer"
                   >
                     <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="font-medium mb-1">فایل‌های خود را اینجا رها کنید</p>
-                    <p className="text-sm text-muted-foreground">یا کلیک کنید برای انتخاب</p>
+                    <p className="font-medium mb-1">{t('newContract.dropFiles')}</p>
+                    <p className="text-sm text-muted-foreground">{t('newContract.orClick')}</p>
                   </label>
                 </div>
 
@@ -400,6 +443,43 @@ const NewContract = () => {
             </div>
           )}
 
+          {/* Step 5: KYC Verification */}
+          {step === 5 && (
+            <div>
+              <h2 className="text-xl font-semibold mb-6">{t('kyc.verifyIdentity')}</h2>
+              <div className="max-w-xl">
+                {formData.party_national_id && formData.party_birth_date ? (
+                  <KYCVerificationForm
+                    contractId={tempContractId || 'temp'}
+                    initialData={{
+                      nationalId: formData.party_national_id,
+                      birthDate: formData.party_birth_date,
+                      fullName: formData.party_name,
+                    }}
+                    onVerificationComplete={(result) => {
+                      setKycVerified(result.success);
+                    }}
+                  />
+                ) : (
+                  <div className="p-6 rounded-xl bg-yellow-50 border border-yellow-200 text-center">
+                    <Shield className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                    <h3 className="font-medium text-yellow-800 mb-2">{t('kyc.missingInfo')}</h3>
+                    <p className="text-sm text-yellow-600">{t('kyc.missingInfoDesc')}</p>
+                  </div>
+                )}
+
+                {kycVerified && (
+                  <div className="mt-4 p-4 rounded-xl bg-green-50 border border-green-200">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <Check className="w-5 h-5" />
+                      <span className="font-medium">{t('kyc.identityVerified')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Navigation */}
           <div className="flex items-center justify-between mt-8 pt-8 border-t border-border">
             <button
@@ -407,18 +487,18 @@ const NewContract = () => {
               disabled={step === 1}
               className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:pointer-events-none"
             >
-              <ArrowRight className="w-5 h-5" />
-              قبلی
+              {isRTL ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
+              {t('newContract.previous')}
             </button>
             
-            {step < 4 ? (
+            {step < 5 ? (
               <button
                 onClick={() => setStep(step + 1)}
                 disabled={step === 1 && !selectedTemplate}
                 className="flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:pointer-events-none"
               >
-                بعدی
-                <ArrowLeft className="w-5 h-5" />
+                {t('newContract.next')}
+                {isRTL ? <ArrowLeft className="w-5 h-5" /> : <ArrowRight className="w-5 h-5" />}
               </button>
             ) : (
               <button
@@ -427,7 +507,7 @@ const NewContract = () => {
                 className="flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
               >
                 {submitting && <Loader2 className="w-5 h-5 animate-spin" />}
-                ایجاد قرارداد
+                {t('newContract.create')}
               </button>
             )}
           </div>

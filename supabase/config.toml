@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.analyze-contract]
 verify_jwt = true
+
+[functions.ai-assist]
+verify_jwt = true
+
+[functions.verify-identity]
+verify_jwt = true
