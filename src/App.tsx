@@ -13,8 +13,6 @@ import Templates from "./pages/Templates";
 import Settings from "./pages/Settings";
 import Support from "./pages/Support";
 import NotFound from "./pages/NotFound";
-import FloatingSupport from "./components/FloatingSupport";
-
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -24,7 +22,6 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <FloatingSupport />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
