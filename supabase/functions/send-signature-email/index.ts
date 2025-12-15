@@ -89,8 +89,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error('Failed to create signature token');
     }
 
-    // Build signature URL
-    const siteUrl = Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '.lovableproject.com').replace('https://bxarjqltzitfoumyqkhu', 'https://103e197c-ac94-48c1-8adf-69633dc289a9') || 'https://trulink.app';
+    // Build signature URL - use the Lovable preview URL
+    const siteUrl = 'https://103e197c-ac94-48c1-8adf-69633dc289a9.lovableproject.com';
     const signatureUrl = `${siteUrl}/sign/${signatureToken}`;
 
     const res = await fetch("https://api.resend.com/emails", {
