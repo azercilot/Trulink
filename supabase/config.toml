@@ -11,3 +11,15 @@ verify_jwt = true
 
 [functions.verify-identity]
 verify_jwt = true
+
+[functions.send-signature-email]
+verify_jwt = true
+
+[functions.send-signature-otp]
+verify_jwt = false
+
+[functions.verify-signature-otp]
+verify_jwt = false
+
+[functions.submit-signature]
+verify_jwt = false
