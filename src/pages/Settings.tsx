@@ -504,11 +504,17 @@ const Settings = () => {
             </h2>
             <p className="text-sm text-muted-foreground mb-4">{t('settings.language.subtitle')}</p>
             
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {[
                 { code: 'fa', label: t('settings.language.fa'), flag: '🇮🇷' },
                 { code: 'en', label: t('settings.language.en'), flag: '🇬🇧' },
                 { code: 'ar', label: t('settings.language.ar'), flag: '🇸🇦' },
+                { code: 'zh', label: t('settings.language.zh'), flag: '🇨🇳' },
+                { code: 'es', label: t('settings.language.es'), flag: '🇪🇸' },
+                { code: 'de', label: t('settings.language.de'), flag: '🇩🇪' },
+                { code: 'fr', label: t('settings.language.fr'), flag: '🇫🇷' },
+                { code: 'ru', label: t('settings.language.ru'), flag: '🇷🇺' },
+                { code: 'pt', label: t('settings.language.pt'), flag: '🇧🇷' },
               ].map((lang) => (
                 <button
                   key={lang.code}
