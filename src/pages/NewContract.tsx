@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   FileText, ArrowLeft, ArrowRight, Check, 
-  Upload, X, Loader2, Building, Car, Home, Users, Briefcase
+  Upload, X, Loader2, Building, Car, Home, Users, Briefcase,
+  Shield, Calendar
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import AIAssistButton from '@/components/ai/AIAssistButton';
+import KYCVerificationForm from '@/components/kyc/KYCVerificationForm';
 
 interface Template {
   id: string;
@@ -23,15 +27,19 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
 };
 
 const NewContract = () => {
+  const { t, i18n } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isRTL = i18n.language === 'fa' || i18n.language === 'ar';
   
   const [step, setStep] = useState(1);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [tempContractId] = useState<string | null>(null);
+  const [kycVerified, setKycVerified] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -41,6 +49,7 @@ const NewContract = () => {
     party_email: '',
     party_phone: '',
     party_national_id: '',
+    party_birth_date: '',
     total_amount: '',
   });
 
@@ -101,7 +110,6 @@ const NewContract = () => {
     
     setSubmitting(true);
     try {
-      // Create contract
       const { data: contract, error: contractError } = await supabase
         .from('contracts')
         .insert({
@@ -121,7 +129,6 @@ const NewContract = () => {
 
       if (contractError) throw contractError;
 
-      // Upload files if any
       if (files.length > 0 && contract) {
         for (const file of files) {
           const filePath = `${user.id}/${contract.id}/${file.name}`;
@@ -146,16 +153,16 @@ const NewContract = () => {
       }
 
       toast({
-        title: 'موفق!',
-        description: 'قرارداد با موفقیت ایجاد شد',
+        title: t('newContract.success'),
+        description: t('newContract.successDesc'),
       });
 
       navigate(`/contracts/${contract.id}`);
     } catch (error) {
       console.error('Error creating contract:', error);
       toast({
-        title: 'خطا',
-        description: 'در ایجاد قرارداد مشکلی پیش آمد',
+        title: t('newContract.error'),
+        description: t('newContract.errorDesc'),
         variant: 'destructive',
       });
     } finally {
@@ -165,8 +172,8 @@ const NewContract = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <div className="animate-pulse text-muted-foreground">در حال بارگذاری...</div>
+      <div className="min-h-screen bg-background flex items-center justify-center" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="animate-pulse text-muted-foreground">{t('common.loading')}</div>
       </div>
     );
   }
@@ -180,15 +187,15 @@ const NewContract = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/30" dir="rtl">
+    <div className="min-h-screen bg-muted/30" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
       <header className="bg-background border-b border-border">
         <div className="container-narrow flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
             <Link to="/dashboard" className="p-2 hover:bg-muted rounded-lg transition-colors">
-              <ArrowRight className="w-5 h-5" />
+              {isRTL ? <ArrowRight className="w-5 h-5" /> : <ArrowLeft className="w-5 h-5" />}
             </Link>
-            <h1 className="font-semibold">ایجاد قرارداد جدید</h1>
+            <h1 className="font-semibold">{t('newContract.title')}</h1>
           </div>
         </div>
       </header>
@@ -222,9 +229,9 @@ const NewContract = () => {
           {/* Step 1: Select Template */}
           {step === 1 && (
             <div>
-              <h2 className="text-xl font-semibold mb-6">انتخاب قالب قرارداد</h2>
+              <h2 className="text-xl font-semibold mb-6">{t('newContract.selectTemplate')}</h2>
               {loading ? (
-                <div className="text-center py-12 text-muted-foreground">در حال بارگذاری...</div>
+                <div className="text-center py-12 text-muted-foreground">{t('common.loading')}</div>
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {templates.map((template) => {
@@ -259,7 +266,7 @@ const NewContract = () => {
               <div className="space-y-6 max-w-xl">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-sm font-medium">{t('newContract.title')}</label>
+                    <label className="block text-sm font-medium">{t('newContract.contractTitle')}</label>
                     <AIAssistButton
                       type="suggest_title"
                       context={{ contractType: formData.contract_type, partyName: formData.party_name }}
@@ -406,10 +413,7 @@ const NewContract = () => {
                     onChange={handleFileUpload}
                     className="hidden"
                   />
-                  <label
-                    htmlFor="file-upload"
-                    className="cursor-pointer"
-                  >
+                  <label htmlFor="file-upload" className="cursor-pointer">
                     <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <p className="font-medium mb-1">{t('newContract.dropFiles')}</p>
                     <p className="text-sm text-muted-foreground">{t('newContract.orClick')}</p>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   FileText, Plus, Search, Bell, User, LogOut, 
   Clock, CheckCircle, AlertCircle, Filter,
@@ -9,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Logo from '@/components/Logo';
+import AIDashboardWidget from '@/components/ai/AIDashboardWidget';
 
 interface Contract {
   id: string;
@@ -392,6 +394,9 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* AI Widget */}
+        <AIDashboardWidget />
       </main>
     </div>
   );
