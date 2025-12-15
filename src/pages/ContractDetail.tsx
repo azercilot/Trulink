@@ -472,14 +472,6 @@ const ContractDetail = () => {
                   {t('ai.analyzeContract')}
                 </Button>
                 <Button
-                  onClick={handleSendForSignature}
-                  size="sm"
-                  className="gap-1.5"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  ارسال برای امضا
-                </Button>
-                <Button
                   onClick={() => setShowDeleteConfirm(true)}
                   variant="ghost"
                   size="icon"
@@ -614,6 +606,24 @@ const ContractDetail = () => {
                   </div>
                 )}
               </div>
+
+              {/* Send for Signature Button - Moved to bottom */}
+              {contract.status === 'draft' && !contract.is_locked && (
+                <div className="bg-background rounded-2xl border border-border p-6">
+                  <h3 className="font-semibold mb-3">ارسال برای امضا</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    با کلیک روی دکمه زیر، قرارداد قفل شده و لینک امضا به ایمیل طرف قرارداد ارسال می‌شود.
+                  </p>
+                  <Button
+                    onClick={handleSendForSignature}
+                    className="w-full gap-2"
+                    size="lg"
+                  >
+                    <Send className="w-4 h-4" />
+                    ارسال برای امضا
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Sidebar */}

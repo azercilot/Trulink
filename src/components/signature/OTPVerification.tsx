@@ -100,6 +100,12 @@ const OTPVerification = ({ email, token, onVerified }: OTPVerificationProps) => 
         <span>{t('signature.verifyIdentity', 'برای امضا، ابتدا هویت خود را تأیید کنید')}</span>
       </div>
 
+      {/* Show email address prominently */}
+      <div className="bg-background border border-border rounded-lg p-3 text-center">
+        <p className="text-xs text-muted-foreground mb-1">{t('signature.yourEmail', 'ایمیل شما')}</p>
+        <p className="font-medium text-foreground" dir="ltr">{email}</p>
+      </div>
+
       {!otpSent ? (
         <Button
           onClick={handleSendOTP}
@@ -111,9 +117,17 @@ const OTPVerification = ({ email, token, onVerified }: OTPVerificationProps) => 
         </Button>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {t('signature.enterOtp', 'کد ۶ رقمی ارسال شده به {{email}} را وارد کنید', { email })}
-          </p>
+          {/* Success message showing email was sent */}
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+            <p className="text-sm text-green-700">
+              {t('signature.otpSentTo', 'کد تأیید ۶ رقمی به ایمیل زیر ارسال شد:')}
+            </p>
+            <p className="font-medium text-green-800 mt-1" dir="ltr">{email}</p>
+            <p className="text-xs text-green-600 mt-2">
+              {t('signature.checkSpam', 'لطفاً پوشه اسپم/جانک را هم بررسی کنید')}
+            </p>
+          </div>
+
           <Input
             type="text"
             maxLength={6}
