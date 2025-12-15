@@ -4,34 +4,44 @@ import {
   AlertTriangle, CheckCircle, AlertCircle, Lightbulb, 
   Loader2, Brain, ChevronDown, ChevronUp, Shield
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { Json } from '@/integrations/supabase/types';
+
+interface RiskItem {
+  title: string;
+  description: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+interface Ambiguity {
+  clause: string;
+  issue: string;
+}
+
+interface Suggestion {
+  title: string;
+  description: string;
+}
 
 interface RiskAnalysis {
-  riskLevel: 'low' | 'medium' | 'high';
-  overallScore: number;
-  risks: Array<{ title: string; description: string; severity: 'low' | 'medium' | 'high' }>;
-  ambiguities: Array<{ clause: string; issue: string }>;
-  suggestions: Array<{ title: string; description: string }>;
+  riskLevel?: 'low' | 'medium' | 'high';
+  overallScore?: number;
+  risks?: RiskItem[];
+  ambiguities?: Ambiguity[];
+  suggestions?: Suggestion[];
 }
 
 interface RiskAnalysisPanelProps {
-  contractText: string;
-  contractType: string;
-  existingAnalysis?: RiskAnalysis | null;
-  onAnalysisComplete?: (analysis: RiskAnalysis) => void;
+  riskAnalysis: Json | null;
+  onAnalyze: () => void;
+  analyzing: boolean;
 }
 
 const RiskAnalysisPanel = ({ 
-  contractText, 
-  contractType, 
-  existingAnalysis,
-  onAnalysisComplete 
+  riskAnalysis, 
+  onAnalyze,
+  analyzing 
 }: RiskAnalysisPanelProps) => {
-  const { t, i18n } = useTranslation();
-  const { toast } = useToast();
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<RiskAnalysis | null>(existingAnalysis || null);
+  const { t } = useTranslation();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['risks']));
 
   const toggleSection = (section: string) => {
@@ -42,49 +52,6 @@ const RiskAnalysisPanel = ({
       newExpanded.add(section);
     }
     setExpandedSections(newExpanded);
-  };
-
-  const analyzeContract = async () => {
-    if (!contractText.trim()) {
-      toast({
-        title: t('ai.noContent'),
-        description: t('ai.noContentDesc'),
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setAnalyzing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('analyze-contract', {
-        body: {
-          contractText,
-          contractType,
-          analysisType: 'risk',
-          language: i18n.language,
-        },
-      });
-
-      if (error) throw error;
-      
-      if (data.riskAnalysis) {
-        setAnalysis(data.riskAnalysis);
-        onAnalysisComplete?.(data.riskAnalysis);
-        toast({
-          title: t('ai.analysisComplete'),
-          description: t('ai.analysisCompleteDesc'),
-        });
-      }
-    } catch (error: any) {
-      console.error('Error analyzing contract:', error);
-      toast({
-        title: t('ai.analysisError'),
-        description: error.message || t('ai.analysisErrorDesc'),
-        variant: 'destructive',
-      });
-    } finally {
-      setAnalyzing(false);
-    }
   };
 
   const getRiskLevelColor = (level: string) => {
@@ -111,7 +78,10 @@ const RiskAnalysisPanel = ({
     return 'text-red-600';
   };
 
-  if (!analysis) {
+  // Parse the JSON risk analysis
+  const analysis: RiskAnalysis | null = riskAnalysis ? (riskAnalysis as RiskAnalysis) : null;
+
+  if (!analysis || !analysis.riskLevel) {
     return (
       <div className="bg-background rounded-2xl border border-border p-6">
         <div className="flex items-center gap-3 mb-4">
@@ -124,8 +94,13 @@ const RiskAnalysisPanel = ({
           </div>
         </div>
         
+        <div className="text-center py-8">
+          <Shield className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+          <p className="text-muted-foreground mb-4">{t('ai.noAnalysisYet')}</p>
+        </div>
+        
         <button
-          onClick={analyzeContract}
+          onClick={onAnalyze}
           disabled={analyzing}
           className="w-full flex items-center justify-center gap-2 bg-accent text-accent-foreground py-3 rounded-xl font-medium hover:brightness-110 transition-all disabled:opacity-50"
         >
@@ -159,12 +134,14 @@ const RiskAnalysisPanel = ({
             </span>
           </div>
         </div>
-        <div className="text-center">
-          <div className={`text-3xl font-bold ${getScoreColor(analysis.overallScore)}`}>
-            {analysis.overallScore}
+        {analysis.overallScore !== undefined && (
+          <div className="text-center">
+            <div className={`text-3xl font-bold ${getScoreColor(analysis.overallScore)}`}>
+              {analysis.overallScore}
+            </div>
+            <div className="text-xs text-muted-foreground">{t('ai.score')}</div>
           </div>
-          <div className="text-xs text-muted-foreground">{t('ai.score')}</div>
-        </div>
+        )}
       </div>
 
       {/* Risks Section */}
@@ -262,7 +239,7 @@ const RiskAnalysisPanel = ({
 
       {/* Re-analyze button */}
       <button
-        onClick={analyzeContract}
+        onClick={onAnalyze}
         disabled={analyzing}
         className="w-full flex items-center justify-center gap-2 border border-border py-2 rounded-xl font-medium hover:bg-muted transition-colors disabled:opacity-50 text-sm"
       >
