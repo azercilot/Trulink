@@ -16,6 +16,7 @@ interface Profile {
   company_name: string | null;
   national_id: string | null;
   avatar_url: string | null;
+  gender: string | null;
 }
 
 const Settings = () => {
@@ -37,6 +38,7 @@ const Settings = () => {
     phone: '',
     company_name: '',
     national_id: '',
+    gender: '',
   });
 
   useEffect(() => {
@@ -68,6 +70,7 @@ const Settings = () => {
           phone: data.phone || '',
           company_name: data.company_name || '',
           national_id: data.national_id || '',
+          gender: data.gender || '',
         });
       }
     } catch (error) {
@@ -94,6 +97,7 @@ const Settings = () => {
           phone: formData.phone || null,
           company_name: formData.company_name || null,
           national_id: formData.national_id || null,
+          gender: formData.gender || null,
         })
         .eq('user_id', user.id);
 
@@ -382,6 +386,30 @@ const Settings = () => {
                     placeholder="0123456789"
                     dir="ltr"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">{t('settings.profile.gender')}</label>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { value: 'male', label: t('settings.profile.genderMale') },
+                    { value: 'female', label: t('settings.profile.genderFemale') },
+                    { value: 'other', label: t('settings.profile.genderOther') },
+                  ].map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, gender: option.value })}
+                      className={`px-4 py-2.5 rounded-xl border transition-all ${
+                        formData.gender === option.value
+                          ? 'border-accent bg-accent/10 text-accent'
+                          : 'border-border hover:bg-muted'
+                      }`}
+                    >
+                      <span className="font-medium">{option.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 

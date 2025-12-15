@@ -98,7 +98,11 @@
       "companyName": "اسم الشركة",
       "companyNamePlaceholder": "اسم الشركة (اختياري)",
       "nationalId": "رقم الهوية",
-      "save": "حفظ التغييرات"
+      "save": "حفظ التغييرات",
+      "gender": "الجنس",
+      "genderMale": "ذكر",
+      "genderFemale": "أنثى",
+      "genderOther": "آخر"
     },
     "notifications": {
       "title": "الإشعارات",
