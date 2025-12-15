@@ -70,6 +70,24 @@
   },
   "settings": {
     "title": "تنظیمات",
+    "avatar": {
+      "title": "تصویر پروفایل",
+      "upload": "آپلود تصویر",
+      "change": "تغییر تصویر",
+      "remove": "حذف تصویر",
+      "hint": "فرمت‌های مجاز: JPG، PNG، GIF - حداکثر ۲ مگابایت",
+      "uploaded": "تصویر آپلود شد",
+      "uploadedDesc": "تصویر پروفایل شما با موفقیت به‌روز شد",
+      "removed": "تصویر حذف شد",
+      "removedDesc": "تصویر پروفایل شما حذف شد",
+      "uploadError": "خطا در آپلود",
+      "uploadErrorDesc": "در آپلود تصویر مشکلی پیش آمد",
+      "removeError": "خطا در حذف تصویر",
+      "invalidType": "فرمت نامعتبر",
+      "invalidTypeDesc": "لطفاً یک فایل تصویر انتخاب کنید",
+      "tooLarge": "حجم زیاد",
+      "tooLargeDesc": "حداکثر حجم مجاز ۲ مگابایت است"
+    },
     "profile": {
       "title": "اطلاعات شخصی",
       "email": "ایمیل",

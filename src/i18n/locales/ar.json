@@ -70,6 +70,24 @@
   },
   "settings": {
     "title": "الإعدادات",
+    "avatar": {
+      "title": "صورة الملف الشخصي",
+      "upload": "رفع صورة",
+      "change": "تغيير الصورة",
+      "remove": "حذف الصورة",
+      "hint": "الصيغ المسموحة: JPG، PNG، GIF - الحد الأقصى ٢ ميجابايت",
+      "uploaded": "تم رفع الصورة",
+      "uploadedDesc": "تم تحديث صورة ملفك الشخصي",
+      "removed": "تم حذف الصورة",
+      "removedDesc": "تم حذف صورة ملفك الشخصي",
+      "uploadError": "خطأ في الرفع",
+      "uploadErrorDesc": "فشل رفع الصورة",
+      "removeError": "فشل حذف الصورة",
+      "invalidType": "صيغة غير صالحة",
+      "invalidTypeDesc": "يرجى اختيار ملف صورة",
+      "tooLarge": "الملف كبير جدًا",
+      "tooLargeDesc": "الحد الأقصى المسموح ٢ ميجابايت"
+    },
     "profile": {
       "title": "المعلومات الشخصية",
       "email": "البريد الإلكتروني",
