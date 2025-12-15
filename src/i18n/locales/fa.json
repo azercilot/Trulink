@@ -182,6 +182,7 @@
     "back": "بازگشت"
   },
   "ai": {
+    "title": "هوش مصنوعی",
     "riskAnalysis": "ارزیابی ریسک حقوقی",
     "riskAnalysisDesc": "تحلیل هوشمند ریسک‌های قرارداد",
     "contractSummary": "خلاصه قرارداد",
@@ -214,9 +215,15 @@
     "amount": "مبلغ",
     "duration": "مدت",
     "terminationConditions": "شرایط فسخ",
-    "keyObligations": "تعهدات کلیدی"
+    "keyObligations": "تعهدات کلیدی",
+    "analyzeContract": "تحلیل با هوش مصنوعی",
+    "noSummaryYet": "هنوز خلاصه‌ای تولید نشده است",
+    "noAnalysisYet": "هنوز تحلیلی انجام نشده است"
   },
   "kyc": {
+    "title": "اعتبارسنجی حقوقی",
+    "verificationStatus": "وضعیت تأیید هویت",
+    "notVerifiedYet": "هنوز استعلام هویت انجام نشده است",
     "statusPending": "در انتظار تأیید",
     "statusVerified": "تأیید شده",
     "statusRejected": "رد شده",
@@ -247,6 +254,12 @@
     "actionSigned": "امضا شده",
     "actionViewed": "مشاهده شده",
     "actionVersionCreated": "نسخه جدید ایجاد شد"
+  },
+  "versioning": {
+    "version": "نسخه",
+    "createNewVersion": "ایجاد نسخه جدید",
+    "newVersionCreated": "نسخه جدید ایجاد شد",
+    "newVersionCreatedDesc": "نسخه جدید قرارداد ایجاد شد"
   },
   "branding": {
     "title": "برندینگ و ظاهر اسناد",
