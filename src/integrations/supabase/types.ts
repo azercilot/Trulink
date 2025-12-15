@@ -419,6 +419,7 @@ export type Database = {
           otp_sent_at: string | null
           otp_verified: boolean | null
           party_email: string
+          reminder_sent_at: string | null
           token: string
           used_at: string | null
         }
@@ -433,6 +434,7 @@ export type Database = {
           otp_sent_at?: string | null
           otp_verified?: boolean | null
           party_email: string
+          reminder_sent_at?: string | null
           token: string
           used_at?: string | null
         }
@@ -447,6 +449,7 @@ export type Database = {
           otp_sent_at?: string | null
           otp_verified?: boolean | null
           party_email?: string
+          reminder_sent_at?: string | null
           token?: string
           used_at?: string | null
         }
@@ -507,7 +510,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      pending_signatures_for_reminder: {
+        Row: {
+          contract_id: string | null
+          contract_title: string | null
+          expires_at: string | null
+          owner_id: string | null
+          party_email: string | null
+          reminder_sent_at: string | null
+          token: string | null
+          token_created_at: string | null
+          token_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signature_tokens_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_role: {
