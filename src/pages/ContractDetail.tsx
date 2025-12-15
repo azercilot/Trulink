@@ -15,6 +15,7 @@ import VerificationStatus from '@/components/kyc/VerificationStatus';
 import DocumentChecklist from '@/components/kyc/DocumentChecklist';
 import AuditTrail from '@/components/audit/AuditTrail';
 import PDFDownloadButton from '@/components/contract/PDFDownloadButton';
+import { Button } from '@/components/ui/button';
 import { Json } from '@/integrations/supabase/types';
 
 interface ContractParty {
@@ -224,10 +225,39 @@ const ContractDetail = () => {
         details: { status: 'pending' },
       });
 
+      // Send email to party if email exists
+      if (contractParty?.party_email) {
+        // Get sender's name from profile
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('full_name, company_name')
+          .eq('user_id', user!.id)
+          .maybeSingle();
+
+        const senderName = profileData?.company_name || profileData?.full_name || 'کاربر TruLink';
+
+        const { error: emailError } = await supabase.functions.invoke('send-signature-email', {
+          body: {
+            contractId: contract.id,
+            contractTitle: contract.title,
+            partyName: contractParty.party_name || '',
+            partyEmail: contractParty.party_email,
+            senderName,
+          },
+        });
+
+        if (emailError) {
+          console.error('Error sending signature email:', emailError);
+          // Don't fail the whole operation if email fails
+        }
+      }
+
       setContract({ ...contract, status: 'pending', is_locked: true });
       toast({
         title: 'ارسال شد',
-        description: 'قرارداد برای امضا ارسال شد',
+        description: contractParty?.party_email 
+          ? 'قرارداد برای امضا ارسال و ایمیل به طرف قرارداد ارسال شد'
+          : 'قرارداد برای امضا ارسال شد',
       });
     } catch (error) {
       console.error('Error sending contract:', error);
@@ -419,37 +449,44 @@ const ContractDetail = () => {
             )}
             
             {contract.is_locked && (
-              <button
+              <Button
                 onClick={handleCreateNewVersion}
-                className="flex items-center gap-2 bg-muted text-foreground px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors"
+                variant="secondary"
+                size="sm"
+                className="gap-1.5"
               >
-                <Copy className="w-4 h-4" />
+                <Copy className="w-3.5 h-3.5" />
                 {t('versioning.createNewVersion')}
-              </button>
+              </Button>
             )}
             {contract.status === 'draft' && !contract.is_locked && (
               <>
-                <button
+                <Button
                   onClick={handleAnalyzeContract}
                   disabled={analyzing}
-                  className="flex items-center gap-2 bg-muted text-foreground px-4 py-2 rounded-lg font-medium hover:bg-muted/80 transition-colors disabled:opacity-50"
+                  variant="secondary"
+                  size="sm"
+                  className="gap-1.5"
                 >
-                  {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+                  {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Brain className="w-3.5 h-3.5" />}
                   {t('ai.analyzeContract')}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSendForSignature}
-                  className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                  size="sm"
+                  className="gap-1.5"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
                   ارسال برای امضا
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 text-destructive hover:bg-red-50 rounded-lg transition-colors"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:bg-destructive/10"
                 >
-                  <Trash2 className="w-5 h-5" />
-                </button>
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </>
             )}
           </div>
